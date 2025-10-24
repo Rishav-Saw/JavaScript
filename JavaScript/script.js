@@ -1,3 +1,5 @@
+// 🧠 --- JavaScript ---
+
 // JavaScript uses Dynamic Typing
 // let a=12;
 // a=true;
@@ -1158,67 +1160,6 @@ console.log("\n--- 26. DOM ---");
 //       a.removeAttribute("href");
 
 
-// --- Adding Event Listeners: ---
-
-// Event listeners are used to make web pages interactive.
-// They “listen” for a specific user action (like a click, key press, mouse hover, etc.)
-// and then execute a function when that event happens.
-
-// Syntax:
-// element.addEventListener(event, callbackFunction);
-
-// Here:
-//   - element → the HTML element you’re targeting
-//   - event → the name of the event to listen for (like "click", "mouseover", "keydown")
-//   - callbackFunction → the function that will run when the event occurs
-
-// Example 1: Click event
-let btn = document.querySelector("button");
-btn.addEventListener("click", function() {
-    console.log("Button was clicked!");
-    alert("You clicked the button!");
-});
-
-// Example 2: Mouseover event
-let heading = document.querySelector("h1");
-heading.addEventListener("mouseover", function() {
-    heading.style.color = "blue";
-});
-
-// Example 3: Keydown event
-document.addEventListener("keydown", function(event) {
-    console.log("Key pressed:", event.key);
-});
-
-// --- Removing an event listener ---
-// We can also remove an existing event listener using removeEventListener().
-// But it only works if the callback is a named function (not an anonymous one).
-
-function sayHello() {
-    console.log("Hello there!");
-}
-
-btn.addEventListener("click", sayHello);
-btn.removeEventListener("click", sayHello); // Event listener removed
-
-// --- Common Event Types ---
-// "click"         → when an element is clicked
-// "dblclick"      → double-click
-// "mouseover"     → mouse pointer moves over an element
-// "mouseout"      → mouse pointer moves out
-// "keydown"       → key is pressed
-// "keyup"         → key is released
-// "submit"        → form submission
-// "input"         → when user types in an input box
-// "change"        → when input value changes (like dropdown selection)
-// "load"          → when the page or image finishes loading
-
-// --- Why use addEventListener()? ---
-// ✅ You can attach multiple listeners of the same type to the same element
-// ✅ Keeps JavaScript separate from HTML (cleaner code)
-// ✅ More control and flexibility compared to inline event handlers
-// ✅ Works well for dynamically created elements
-
 // --- Dynamic DOM Manipulation: ---
 
 // The DOM is not static — we can dynamically create, insert, and remove elements
@@ -1374,3 +1315,517 @@ allHeadings.forEach(h => {
 // --- Converting NodeList to Array ---
 // let arr = Array.from(allHeadings);
 // Now you can use array methods like map(), filter(), etc.
+
+
+// Q. Change the color of every even indexed h1 to red and odd indexed h1 to blue
+// .even{
+//     color: red;
+// }
+// .odd{
+//     color: blue;
+// }
+// let evenH1= document.querySelectorAll("h1:nth-child(2n)"); // selects every even indexed h1
+// let oddH1= document.querySelectorAll("h1:nth-child(2n+1)"); // selects every odd indexed h1
+
+// evenH1.forEach(h=> h.classList.add("even"));
+    // or
+// evenH1.forEach(function(element){
+//     element.style.color= "red";
+// });
+// oddH1.forEach(h=> h.classList.add("odd"));
+    // or
+// oddH1.forEach(function(element){
+//     element.style.color= "blue";
+// });
+
+
+// Q. Add a highlight class to every even item in a list
+// .highlight{
+//     color: red;
+// }
+// let li= document.querySelectorAll("ul li:nth-child(2n)"); // selects every even indexed li
+// li.forEach(function(element){
+//     element.classList.add("highlight");
+// });
+
+
+// Q. Change all p tag's size to 18px
+// let p= document.querySelectorAll("p");
+// p.forEach(function(element){
+//     element.style.fontSize="18px";
+// })
+
+
+// --- 27. Events and Event Handling ---
+console.log("\n--- 27. Events and Event Handling ---");
+
+
+// Events make web pages interactive. 
+// An event is an action that happens in the browser (like clicking, typing, submitting a form, etc.)
+// Event Handling means detecting these actions and responding to them using JavaScript.
+// Event Listeners are used to react to these actions
+
+
+// --- Event Binding ---
+// Binding means connecting an event with a function (listener) that should run when the event occurs.
+
+let btn = document.querySelector("button");
+
+// Method 1: Using addEventListener (recommended)
+btn.addEventListener("click", function() {
+    console.log("Button clicked!");
+});
+
+// Method 2: Inline (not preferred for large projects)
+// <button onclick="myFunction()">Click</button>
+
+
+// Adding Event Listeners:
+
+// Event listeners are used to make web pages interactive.
+// They “listen” for a specific user action (like a click, key press, mouse hover, etc.)
+// and then execute a function when that event happens.
+
+// Syntax:
+// element.addEventListener(event, callbackFunction);
+
+// Here:
+//   - element → the HTML element you’re targeting
+//   - event → the name of the event to listen for (like "click", "mouseover", "keydown")
+//   - callbackFunction → the function that will run when the event occurs
+
+// Example 1: Click event
+let btn1 = document.querySelector("button");
+btn1.addEventListener("click", function() {
+    console.log("Button was clicked!");
+    alert("You clicked the button!");
+});
+
+// Example 2: Mouseover event
+let heading = document.querySelector("h1");
+heading.addEventListener("mouseover", function() {
+    heading.style.color = "blue";
+});
+
+// Example 3: Keydown event
+document.addEventListener("keydown", function(event) {
+    console.log("Key pressed:", event.key);
+});
+
+// Removing an event listener:
+
+// We can also remove an existing event listener using removeEventListener().
+// But it only works if the callback is a named function (not an anonymous one).
+
+function sayHello() {
+    console.log("Hello there!");
+}
+
+btn.addEventListener("click", sayHello);
+btn.removeEventListener("click", sayHello); // Event listener removed
+
+// Event Binding      → Attach function to event using addEventListener
+
+// --- Why use addEventListener()? ---
+// ✅ You can attach multiple listeners of the same type to the same element
+// ✅ Keeps JavaScript separate from HTML (cleaner code)
+// ✅ More control and flexibility compared to inline event handlers
+// ✅ Works well for dynamically created elements
+
+
+// --- Common Events ---
+
+// Common Event Types:
+// "click"         → when an element is clicked
+// "dblclick"      → double-click
+// "mouseover"     → mouse pointer moves over an element
+// "mouseout"      → mouse pointer moves out
+// "keydown"       → key is pressed
+// "keyup"         → key is released
+// "submit"        → form submission
+// "input"         → when user types in an input box
+// "change"        → when input value changes (like dropdown selection)
+// "load"          → when the page or image finishes loading
+
+// 1️⃣ click      → Fires when an element is clicked
+btn.addEventListener("click", () => console.log("Clicked!"));
+
+// 2️⃣ input      → Fires when user types in an input box
+document.querySelector("input").addEventListener("input", e => {
+    console.log("Current value:", e.target.value);
+});
+
+// 3️⃣ change     → Fires when an input value changes (and loses focus) or dropdown changes
+document.querySelector("select").addEventListener("change", e => {
+    console.log("Selected:", e.target.value);
+});
+
+// 4️⃣ submit     → Fires when a form is submitted
+document.querySelector("form").addEventListener("submit", e => {
+    e.preventDefault(); // Stops form from refreshing page
+    console.log("Form submitted!");
+});
+
+// 5️⃣ mouseover  → Fires when mouse enters an element
+let box1 = document.querySelector(".box");
+box.addEventListener("mouseover", () => {
+    box1.style.backgroundColor = "lightblue";
+});
+
+// 6️⃣ keyup      → Fires when a key is released
+document.addEventListener("keyup", e => {
+    console.log("Key released:", e.key);
+});
+
+
+// --- Event Object ---
+// Whenever an event occurs, JavaScript automatically passes an event object (usually named 'e' or 'event') 
+// to the event handler function. It contains details about the event.
+
+btn.addEventListener("click", function(e) {
+    console.log(e.target); // The element that triggered the event
+    console.log(e.type);   // Type of event (e.g., "click")
+    e.preventDefault();    // Prevents default browser behavior (like form submission)
+});
+
+// Event Object       → Details about the event (target, type, preventDefault)
+
+
+// --- Event Bubbling and Capturing ---
+
+// During Event Handling:
+//  Phase 1 is Capturing phase. But it is false by default so we don't see it's effect
+//  Phase 2 is Bubbling phase. Since it is on by default, it shows it's effects
+// Note: The ones for which capturing phase is turned to true, they won't show their effect again in the bubbling phase
+
+// When an event occurs on an element inside another element, it “bubbles up” from the inner element to its parent(s).
+// Example: Clicking on a <button> inside a <div> triggers both button's and div's click events unless stopped.
+
+// Bubbling phase (default): event moves from inner → outer elements
+// Capturing phase: event moves from outer → inner elements. We have to toggle it to true to utilize it.
+
+document.querySelector(".outer").addEventListener("click", () => {
+    console.log("Outer Div clicked (Bubbling)");
+});
+
+document.querySelector(".inner").addEventListener("click", () => {
+    console.log("Inner Div clicked");
+});
+
+// To listen in capturing phase:
+document.querySelector(".outer").addEventListener("click", () => {
+    console.log("Outer Div clicked (Capturing)");
+}, true); // 'true' means use capturing phase
+
+// Bubbling/Capturing → Direction of event flow through DOM
+
+
+// --- Event Delegation ---
+// Instead of adding separate event listeners to multiple child elements,
+// we can add one listener to their common parent and detect which child triggered the event.
+// This improves performance and works even for dynamically added elements.
+
+let list = document.querySelector("ul");
+list.addEventListener("click", function(e) {
+    if (e.target.tagName === "LI") { // Check if clicked element is <li>
+        console.log("List item clicked:", e.target.textContent);
+    }
+});
+
+// --- Summary ---
+// Event Delegation   → Handle multiple child events using one parent listener
+
+
+// Q. Make paragraph green on mouse click
+let p= document.querySelector("p");
+p.addEventListener("click", function(){
+    p.style.color= "green";
+});
+
+// --- 28. Forms and Form Validation ---
+console.log("\n--- 28. Forms and Form Validation ---");
+
+
+// Reading values from input, textarea, select:
+
+// You can access form field values using the `.value` property.
+// Example:
+const nameInput = document.querySelector('#name');
+const messageTextarea = document.querySelector('#message');
+const countrySelect = document.querySelector('#country');
+
+console.log(nameInput.value);
+console.log(messageTextarea.value);
+console.log(countrySelect.value);
+
+
+// Prevent default submission:
+
+// The `preventDefault()` method stops the default form submission so you can handle it with JavaScript.
+const form = document.querySelector('#myForm');
+form.addEventListener('submit', function (e) {
+  e.preventDefault(); // Prevent page reload
+  console.log('Form submission prevented!');
+});
+
+
+// Inline and Js-based validation:
+
+// Inline validation uses HTML attributes like `required`, `minlength`, `maxlength`, `pattern`, etc.
+// JS-based validation allows more flexible, custom checks.
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  const name = nameInput.value.trim();
+
+  if (name === '') {
+    console.log('Name is required.');
+  } else {
+    console.log('Form validated successfully!');
+  }
+});
+
+
+// Showing error messages conditionally:
+
+// We can dynamically show or hide error messages based on user input.
+const errorMsg = document.querySelector('#error-msg');
+
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  if (nameInput.value.trim() === '') {
+    errorMsg.textContent = 'Please enter your name.';
+    errorMsg.style.display = 'block';
+  } else {
+    errorMsg.style.display = 'none';
+    console.log('Form submitted successfully!');
+  }
+});
+
+
+// Pattern attribute vs custom regex:
+
+// The `pattern` attribute provides built-in validation for inputs using regex in HTML.
+// Example: <input type="text" pattern="[A-Za-z]{3,}" title="At least 3 letters">
+// Custom regex in JS gives more flexibility for validation logic.
+const emailInput = document.querySelector('#email');
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+form.addEventListener('submit', function (e) {
+  e.preventDefault();
+  if (!emailPattern.test(emailInput.value)) {
+    console.log('Invalid email format!');
+  } else {
+    console.log('Email is valid!');
+  }
+});
+
+
+// .value vs .textContent
+
+//      .value is used for input tag specifically
+//      .textContent is used for every text tag in HTML except input
+
+
+// --- 29. Timers and Intervals ---
+console.log("\n--- 29. Timers and Intervals ---");
+
+// JavaScript provides built-in functions to execute code after a delay or repeatedly at a fixed interval.
+// These are commonly used for delaying UI actions, animations, auto-refreshing data, etc.
+
+
+// setTimeout(callback, delay)
+// Executes the callback function once after the specified delay (in milliseconds).
+// Returns a timeout ID, which can be used to cancel the timeout using clearTimeout().
+
+let timeoutId = setTimeout(() => {
+    console.log("This runs after 2 seconds");
+}, 2000);
+
+// clearTimeout(timeoutId)
+// Cancels a timeout that was previously set with setTimeout().
+
+clearTimeout(timeoutId); // Prevents the above code from executing
+
+
+// setInterval(callback, delay)
+// Executes the callback function repeatedly every specified delay (in milliseconds).
+// Returns an interval ID, which can be used to stop the interval using clearInterval().
+
+let intervalId = setInterval(() => {
+    console.log("This runs every 1 second");
+}, 1000);
+
+// clearInterval(intervalId)
+// Cancels a repeating interval.
+
+clearInterval(intervalId);
+
+
+// Use Cases:
+//  - setTimeout: Showing messages after delay, animations, deferred UI updates
+//  - setInterval: Auto-refreshing data, countdown timers, periodic UI updates
+
+// Q. Create a timer from 10 to 1
+let counter= 10;
+let timer= setInterval(function(){
+    if(counter){
+        console.log(counter--); // Prints from 10 to 1
+    }else{
+        console.log(counter); // Prints 0 and stops the interval
+        clearInterval(timer);
+    }
+}, 1000); // Time is in millisec so 1000 ms= 1 sec
+
+
+// --- 30. LocalStorage, SessionStorage and Cookies ---
+console.log("\n--- 30. LocalStorage, SessionStorage and Cookies ---");
+
+// Web storage allows data to be stored directly in the browser, enabling persistence across sessions or tabs.
+// The three main storage mechanisms are localStorage, sessionStorage, and cookies.
+
+
+// localStorage API
+// Data stored here persists even after the browser is closed and reopened.
+// Useful for saving user preferences, theme settings, or cached data (~5-10 MB).
+
+localStorage.setItem("username", "Rishav"); // Save data
+let userA = localStorage.getItem("username"); // Retrieve data
+console.log(userA); // "Rishav"
+localStorage.removeItem("username"); // Remove one item
+localStorage.clear(); // Clear all stored data
+
+
+// sessionStorage API
+// Similar to localStorage, but data lasts only until the browser tab or window is closed (~5-10 MB).
+
+sessionStorage.setItem("sessionID", "abc123");
+let id = sessionStorage.getItem("sessionID"); // returns string
+console.log(id); // "abc123"
+sessionStorage.removeItem("sessionID");
+sessionStorage.clear();
+
+
+// Storing/retrieving strings vs JSON
+// Both localStorage and sessionStorage store data as strings only.
+// To store objects or arrays, we must convert them using JSON methods.(JSON.stringify(), JSON.parse())
+
+let userObj = { name: "Rishav", age: 22 };
+localStorage.setItem("user", JSON.stringify(userObj)); // Convert to string
+let storedUser = JSON.parse(localStorage.getItem("user")); // Convert back to object
+console.log(storedUser.name); // "Rishav"
+
+
+// Why only strings work in localStorage
+// Web Storage is designed to be simple and lightweight — it stores key-value pairs as plain strings only.
+// Non-string data types (objects, arrays, booleans) must be manually converted using JSON methods.
+
+
+// Cookies
+// Cookies are small pieces of data sent from the server and stored in the browser (~ 4KB).
+// They are included automatically with HTTP requests and often used for authentication and tracking.
+
+document.cookie = "theme=dark; path=/"; // Basic structure: key=value; path=/
+document.cookie = "token=xyz123; path=/; expires=Fri, 31 Dec 2025 23:59:59 GMT"; // With expiration
+
+// Reading cookies (returns all cookies as a single string)
+console.log(document.cookie); // "theme=dark; token=xyz123"
+
+// Cookies need manual encoding/expiration handling — developers must handle expiry, size limits, and formatting manually.
+
+// Usage Summary:
+//  - localStorage → Persistent data (user settings, saved state)
+//  - sessionStorage → Temporary data (form progress, tab-specific info)
+//  - cookies → Authentication, cross-tab or cross-session server communication
+
+
+
+// 🧠 --- Advanced JavaScript ---
+
+// --- 1. Scope, Execution Context and Closures ---
+
+// These are the core concepts that define how and where variables, functions, and objects are accessible and executed in JavaScript.
+
+
+// Variable Scope
+// Scope determines the visibility or accessibility of variables in a program.
+// There are three main types of scope in JavaScript:
+
+// 1️⃣ Global Scope → Variables declared outside any function or block are global and accessible everywhere.
+let globalVar = "I am global";
+
+// 2️⃣ Block Scope → Variables declared with let or const inside {} (like loops or if statements) are limited to that block.
+{
+    let blockVar = "I exist only here";
+    console.log(blockVar); // ✅ Works
+}
+// console.log(blockVar); // ❌ ReferenceError
+
+// 3️⃣ Function Scope → Variables declared inside a function are accessible only within that function.
+function test() {
+    let funcVar = "Inside function";
+    console.log(funcVar);
+}
+// console.log(funcVar); // ❌ Not accessible outside
+
+
+// Execution Context
+// Every time JavaScript runs code, it creates an *execution context* — an environment where code is evaluated and executed.
+// Two phases occur during execution:
+
+// 1️⃣ Memory Creation Phase → Variables and functions are hoisted (declared but not yet assigned values).
+// 2️⃣ Execution Phase → Code runs line by line, and values are assigned/executed.
+
+
+// Lexical Scope vs Dynamic Scope
+// Lexical Scope → Determined by where the function is physically written in code (JavaScript uses lexical scoping).
+// Dynamic Scope → Determined by where the function is called (not used in JS).
+
+function outer() {
+    let outerVar = "outer";
+    function inner() {
+        console.log(outerVar); // ✅ Accessible due to lexical scope
+    }
+    inner();
+}
+outer();
+
+
+// Closures
+// A closure is created when an inner function *remembers* variables from its outer function,
+// even after the outer function has finished executing.
+
+function counter() {
+    let count = 0;
+    return function() {
+        count++;
+        console.log(count);
+    };
+}
+
+const inc = counter();
+inc(); // 1
+inc(); // 2 → count is preserved due to closure
+
+
+// Use Cases of Closures
+// - Private counters or data hiding
+// - Encapsulation of logic
+// - Maintaining state between function calls
+// - Event handlers and callback-based systems
+
+
+// Closure vs Returning a Function
+// A closure forms when an inner function *retains access* to its lexical scope.
+// Returning a function is just the mechanism — closure happens when that returned function is used later and still remembers outer variables.
+
+
+// Scope Chain vs Call Stack
+// Scope Chain → The hierarchy JS follows to find variables (inner → outer → global).
+// Call Stack → The mechanism that tracks which function is currently being executed (used for function calls and returns).
+
+
+// Summary
+// - Scope defines where variables live.
+// - Execution context defines how code runs.
+// - Closures preserve memory across function calls.
+// - JavaScript gives your logic “memory” using closures — the foundation for advanced patterns like currying, memoization, and modules.
