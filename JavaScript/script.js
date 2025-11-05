@@ -1738,6 +1738,68 @@ console.log(document.cookie); // "theme=dark; token=xyz123"
 //  - cookies → Authentication, cross-tab or cross-session server communication
 
 
+// --- JSON (JavaScript Object Notation) ---
+
+/*
+JSON stands for JavaScript Object Notation.
+It’s a lightweight data format used for storing and transferring data between a server and a client.
+It’s language-independent but closely resembles JavaScript object syntax.
+*/
+
+// --- Example ---
+const userz = {
+  name: "Rishav",
+  age: 23,
+  skills: ["Java", "JavaScript", "HTML"]
+};
+
+// Converting a JS object → JSON string
+const jsonString = JSON.stringify(userz);
+console.log(jsonString);
+// Output: {"name":"Rishav","age":23,"skills":["Java","JavaScript","HTML"]}
+
+// Converting JSON string → JS object
+const parsedObj = JSON.parse(jsonString);
+console.log(parsedObj.name); // Rishav
+
+
+// --- JSON Rules ---
+// ✅ Data is in key:value pairs
+// ✅ Keys must be in double quotes
+// ✅ Strings use double quotes (" ")
+// ✅ No functions or undefined values allowed
+// ✅ Supports only: string, number, boolean, null, object, array
+
+
+// --- Common Use Cases ---
+// - API communication (fetch() returns JSON responses)
+// - LocalStorage or SessionStorage (values must be strings)
+// - Configuration files (.json)
+// - Data exchange between different platforms or languages
+
+
+// --- Example with Fetch ---
+fetch("https://jsonplaceholder.typicode.com/users/1")
+  .then(res => res.json()) // parse JSON body
+  .then(data => console.log(data))
+  .catch(err => console.error("Error:", err));
+
+
+// --- Example: Storing JSON in localStorage ---
+const student = { id: 1, name: "Anya", marks: 90 };
+localStorage.setItem("student", JSON.stringify(student));
+
+const stored = JSON.parse(localStorage.getItem("student"));
+console.log(stored.marks); // 90
+
+
+// --- Key Takeaways ---
+// - JSON = Data format, not a data structure.
+// - stringify() → object → JSON string
+// - parse() → JSON string → object
+// - Used everywhere APIs or storage require text-based data exchange.
+
+
 
 // 🧠 --- Advanced JavaScript ---
 
@@ -1829,3 +1891,841 @@ inc(); // 2 → count is preserved due to closure
 // - Execution context defines how code runs.
 // - Closures preserve memory across function calls.
 // - JavaScript gives your logic “memory” using closures — the foundation for advanced patterns like currying, memoization, and modules.
+
+
+// --- 2. The this Keyword ---
+
+// The `this` keyword in JavaScript refers to the object that is *currently executing* the code.
+// Its value depends on *how* and *where* a function is called — not where it’s defined.
+
+
+// this in Global Scope
+// In browsers, `this` in the global scope refers to the `window` object.
+console.log(this === window); // true (in browser)
+
+
+// this in Functions
+// In a normal function (non–strict mode), `this` refers to the global object (window in browsers).
+// In strict mode, `this` is `undefined`.
+
+function showThis() {
+    console.log(this);
+}
+showThis(); // window (or undefined in strict mode)
+
+
+// this in Methods
+
+// When a function is called as a method of an object, `this` refers to that object.
+const userx = {
+    name: "Rishav",
+    greet() { // OR greet: function(){
+        console.log(this); // this points to the object userx
+        console.log("Hello, " + this.name); // points to the value of key "name"
+    }
+};
+userx.greet(); // "Hello, Rishav" — `this` points to `user`
+
+
+// However, arrow functions behave differently depending on *where* they are used.
+
+// ❌ Arrow function as a method (at the start) — does NOT bind its own `this`
+const user1 = {
+    name: "Rishav",
+    greet: () => {
+        console.log("Hello, " + this.name);
+    }
+};
+user1.greet(); 
+// Output: "Hello, undefined"
+// Explanation: Arrow functions don’t have their own `this`. 
+// They inherit `this` from their lexical scope (usually global scope → window), 
+// not from the object itself. So `this.name` becomes undefined.
+
+
+// ✅ Arrow function inside a regular method — works correctly
+const user2 = {
+    name: "Rishav",
+    greet: function() {
+        const inner = () => {
+            console.log("Hello, " + this.name);
+        };
+        inner();
+    }
+};
+user2.greet(); 
+// Output: "Hello, Rishav"
+// Explanation: The outer `greet` function has its own `this` bound to `user2`. 
+// The inner arrow function doesn’t create its own `this`; instead, it *inherits* 
+// `this` from the surrounding function (`greet`), where `this` = `user2`.
+
+// ✅ Conclusion:
+// - Arrow functions at the top level (as object methods) lose `this`.
+// - Arrow functions *inside* normal functions correctly inherit the surrounding `this`.
+
+
+
+// this in Event Handlers
+// In DOM event listeners, `this` refers to the element that received the event.
+
+document.body.addEventListener("click", function() {
+    console.log(this); // <body> element
+});
+
+
+// this in Classes
+// Inside a class, `this` refers to the instance of that class.
+
+class Person {
+    constructor(name) {
+        this.name = name;
+    }
+    intro() {
+        console.log("Hi, I’m " + this.name);
+    }
+}
+const p1 = new Person("Rishav"); // new creates a blank object(in general)
+p1.intro(); // "Hi, I’m Rishav" → `this` = p1
+
+// | From Image                                    | Meaning                                                  | Covered In Explanation                                                           |
+// | --------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------------------------------------- |
+// | **global – window**                           | `this` in global scope → `window`                        | ✔️ “this in Global Scope” section                                                |
+// | **function – window**                         | Regular (non-strict) function → `window`                 | ✔️ “this in Functions” section                                                   |
+// | **method with ES5 fnc – object**              | Normal function as object method → `this` = object       | ✔️ “this in Methods” section                                                     |
+// | **method with ES6 arrow fnc – window**        | Arrow method loses `this` → `window`                     | ✔️ “Why Arrow Functions Lose this” section                                       |
+// | **ES5 function inside ES5 method – window**   | Inner regular function → loses `this` → `window`         | ✔️ Demonstrated under “Arrow function inside regular method” example explanation |
+// | **arrow function inside ES5 method – object** | Arrow inherits `this` from surrounding function → object | ✔️ “Arrow function inside a regular method — works correctly” section            |
+// | **event handler – element**                   | `this` = element that triggered the event                | ✔️ “this in Event Handlers” section                                              |
+// | **class – blank object**                      | Inside a class, `this` = instance (new blank object)     | ✔️ “this in Classes” section                                                     |
+
+
+// Arrow Functions and Lexical this
+// Arrow functions do not have their own `this`.
+// Instead, they capture `this` from the surrounding (lexical) scope.
+
+const objx = {
+    name: "Rishav",
+    normalFn: function() {
+        console.log(this.name);
+    },
+    arrowFn: () => {
+        console.log(this.name);
+    }
+};
+
+objx.normalFn(); // "Rishav"
+objx.arrowFn(); // undefined → Arrow doesn’t bind its own `this`
+
+
+// Why Arrow Functions “Lose” this for Methods
+// Arrow functions inherit `this` from where they were defined, not where they are called.
+// Hence, they’re not ideal for defining object methods that depend on `this`.
+
+
+// Manual Binding: bind(), call(), apply()
+// These methods let you manually set the value of `this` for a function.
+
+function greet(place) {
+    console.log(`Hello ${this.name} from ${place}`);
+}
+
+const person = { name: "Rishav" };
+
+greet.call(person, "India"); // "Hello Rishav from India"
+greet.apply(person, ["India"]); // Same output, but arguments as array
+const boundGreet = greet.bind(person);
+boundGreet("India"); // "Hello Rishav from India"
+
+
+// this inside Event Listeners with Arrow Function
+// Arrow functions inside event listeners do not bind their own `this`, 
+// so `this` refers to the outer lexical scope (often window).
+
+document.querySelector("button")?.addEventListener("click", () => {
+    console.log(this); // window (not the button)
+});
+
+
+// this Doesn’t Lie — The Call Site Defines Behavior
+// The value of `this` is always determined by how a function is *called*, not where it’s *written*.
+
+
+// Example: Custom Logger Object with Different Method Styles
+const logger = {
+    prefix: "LOG:",
+    normalLog(message) {
+        console.log(this.prefix, message);
+    },
+    arrowLog: (message) => {
+        console.log(this.prefix, message);
+    }
+};
+
+logger.normalLog("Hello"); // "LOG: Hello"
+logger.arrowLog("Hello");  // "undefined Hello" → Arrow loses `this`
+
+
+// Using bind() to Fix Incorrect Context
+const detachedLog = logger.normalLog;
+detachedLog("Lost context"); // undefined prefix
+const fixedLog = logger.normalLog.bind(logger);
+fixedLog("Fixed context"); // "LOG: Fixed context"
+
+
+// Summary
+// - Global → window
+// - Function → global (or undefined in strict mode)
+// - Method → object that owns the method
+// - Event handler → element that received the event
+// - Class → instance of the class
+// - Arrow → inherits from surrounding scope
+// ✅ Always remember: "this" depends on the *call site*, not the *definition site*.
+
+
+// --- 3. Object-Oriented JavaScript (OOP) ---
+
+// Core Idea:
+// JS uses prototypes for inheritance rather than traditional class-based systems. 
+// Objects inherit directly from other objects (prototype chain).
+
+// Constructor Functions and Prototypes:
+// Before ES6, we used constructor functions to create objects.
+// Example:
+function User(name) {
+	this.name = name;
+}
+User.prototype.greet = function() {
+	console.log(`Hello, ${this.name}`);
+};
+const u1 = new User("Alice"); // new -> creates object linked to User.prototype
+u1.greet(); // Hello, Alice
+
+// new Keyword Behavior:
+// 1. Creates a blank object {}
+// 2. Sets its prototype -> constructor.prototype
+// 3. Executes the constructor function (this = new object)
+// 4. Returns the object (unless function returns another object)
+
+// ES6 Classes:
+// A cleaner syntax over prototypes (still uses them under the hood).
+class BankAccount {
+	#balance; // private field
+	constructor(owner, balance = 0) {
+		this.owner = owner;
+		this.#balance = balance;
+	}
+	deposit(amount) {
+		this.#balance += amount;
+		console.log(`Deposited ₹${amount}. Balance: ₹${this.#balance}`);
+	}
+	withdraw(amount) {
+		if (amount > this.#balance) console.log("Insufficient funds!");
+		else {
+			this.#balance -= amount;
+			console.log(`Withdrew ₹${amount}. Balance: ₹${this.#balance}`);
+		}
+	}
+	getBalance() {
+		return this.#balance; // Encapsulation via private field
+	}
+}
+const acc = new BankAccount("Rishav", 1000);
+acc.deposit(500);
+acc.withdraw(300);
+
+// Extending a Class:
+class User {
+	constructor(name, role = "user") {
+		this.name = name;
+		this.role = role;
+	}
+	describe() {
+		console.log(`${this.name} is a ${this.role}`);
+	}
+}
+
+class Admin extends User {
+	constructor(name, permissions) {
+		super(name, "admin"); // super() calls parent constructor
+		this.permissions = permissions;
+	}
+	deleteUser(user) {
+		console.log(`${this.name} deleted ${user.name}`);
+	}
+}
+const admin = new Admin("Kumar", ["delete", "edit"]);
+admin.describe(); // Kumar is a admin
+admin.deleteUser({ name: "TestUser" });
+
+// Prototypal vs Classical Inheritance:
+// JS → prototypal (objects linked to objects).
+// Classical → class hierarchies (e.g., Java, C++).
+// JS classes are syntactic sugar over prototypes.
+
+// A) Constructor + prototype chaining (classic ES5 style)
+function Person(name) {
+  this.name = name;            // own property
+}
+Person.prototype.greet = function() { // shared method on prototype
+  console.log(`Hello, I'm ${this.name}`);
+};
+
+function Employee(name, job) {
+  Person.call(this, name);     // inherit own properties
+  this.job = job;
+}
+// Link Employee.prototype to Person.prototype (prototypal inheritance)
+Employee.prototype = Object.create(Person.prototype);
+Employee.prototype.constructor = Employee;
+
+Employee.prototype.describe = function() {
+  console.log(`${this.name} works as a ${this.job}`);
+};
+
+const emp = new Employee("Asha", "Engineer");
+emp.greet();        // Hello, I'm Asha  (inherited from Person.prototype)
+emp.describe();     // Asha works as a Engineer
+
+
+// B) Object.create style
+const animal = {
+  speak() {
+    console.log(`${this.name} makes a noise`);
+  }
+};
+
+const dog = Object.create(animal); // dog.__proto__ === animal
+dog.name = "Rex";
+dog.speak(); // Rex makes a noise
+
+// Notes:
+// - Methods placed on prototype are shared by all instances (memory efficient).
+// - Object.create enables creating an object directly linked to another object as its prototype.
+
+
+// Encapsulation:
+// Private fields (#field) hide internal data.
+// Accessible only within the class. Example: #balance above.
+
+// A) Encapsulation using private class fields (#) — ES2020+
+class BankAccount {
+  #balance; // truly private
+  constructor(owner, amount = 0) {
+    this.owner = owner;
+    this.#balance = amount;
+  }
+  deposit(amount) {
+    this.#balance += amount;
+  }
+  withdraw(amount) {
+    if (amount > this.#balance) throw new Error("Insufficient funds");
+    this.#balance -= amount;
+  }
+  getBalance() {
+    return this.#balance; // only accessible via methods
+  }
+}
+
+const a = new BankAccount("Rishav", 500);
+a.deposit(200);
+console.log(a.getBalance()); // 700
+// console.log(a.#balance); // SyntaxError — cannot access private field outside class
+
+
+// B) Encapsulation using closures (function factory) — works in older JS
+function createCounter() {
+  let count = 0; // private variable in closure
+  return {
+    increment() {
+      count++;
+    },
+    get() {
+      return count;
+    }
+  };
+}
+
+const c = createCounter();
+c.increment();
+c.increment();
+console.log(c.get()); // 2
+// console.log(c.count); // undefined — private, not exposed
+
+// Notes:
+// - Private fields (#) provide language-level privacy.
+// - Closures provide privacy by capturing variables in function scope.
+// - Both approaches prevent external code from directly mutating internal state.
+
+
+// Class Syntax vs Function Prototype Chain:
+// Class is a shorthand; under the hood it still creates constructor + prototype methods.
+
+// Shared vs Own Properties:
+// - Properties in constructor → own (unique per instance).
+// - Methods in prototype/class → shared (memory-efficient).
+
+// Classes are for Structure; Functions are for Freedom:
+// Classes → predictable, structured design (OOP).
+// Functions → flexible, composable logic (FP style).
+
+
+// --- 4. Callbacks, Promises and Async/Await ---
+
+// --- Synchronous vs Asynchronous JS ---
+/*
+JavaScript is single-threaded and synchronous by default.
+However, asynchronous operations (like setTimeout, fetch, etc.)
+allow non-blocking behavior using the event loop.
+*/
+
+console.log("Start");
+setTimeout(() => console.log("Async Task"), 1000);
+console.log("End");
+// Output order: Start → End → Async Task
+
+
+// --- Callback Pattern and Callback Hell ---
+/*
+A callback is a function passed as an argument to another function
+to run later (usually after an async operation).
+Callback hell occurs when callbacks are nested inside other callbacks,
+making code hard to read and maintain.
+*/
+
+function getData(callback) {
+  setTimeout(() => {
+    console.log("Data fetched");
+    callback();
+  }, 1000);
+}
+
+getData(() => {
+  console.log("Processing data...");
+  getData(() => {
+    console.log("Saving data...");
+  });
+});
+
+// Problem: Deep nesting = hard to manage (callback hell)
+
+
+// --- Promises: resolve, reject, then, catch ---
+/*
+A Promise represents a value that will be available in the future.
+It can be: pending → fulfilled → rejected.
+Promises simplify async flow and flatten nested callbacks.
+*/
+
+const fetchData = new Promise((resolve, reject) => {
+  let success = true;
+  setTimeout(() => {
+    if (success) resolve("Data loaded!");
+    else reject("Error fetching data");
+  }, 1000);
+});
+
+fetchData
+  .then(res => console.log(res))     // handles resolve
+  .catch(err => console.error(err)); // handles reject
+
+
+// --- async / await syntax ---
+/*
+async functions always return a Promise.
+await pauses the async function until the Promise settles.
+Use try/catch for error handling.
+*/
+
+async function loadUser() {
+  try {
+    console.log("Fetching user...");
+    const user = await new Promise(resolve => 
+      setTimeout(() => resolve({ name: "Asha" }), 1000)
+    );
+    console.log("User loaded:", user.name);
+  } catch (error) {
+    console.error("Failed:", error);
+  }
+}
+loadUser();
+
+
+// --- Chaining Async Operations ---
+/*
+You can chain multiple async actions sequentially.
+*/
+
+async function fetchUsers() {
+  const users = ["A", "B", "C"];
+  for (const u of users) {
+    await new Promise(res => setTimeout(res, 1000));
+    console.log("Fetched user:", u);
+  }
+}
+fetchUsers();
+
+
+// --- Mixing async/await with then/catch ---
+/*
+Sometimes you may mix both for convenience.
+*/
+
+async function fetchPost() {
+  return new Promise(resolve => setTimeout(() => resolve("Post Loaded"), 500));
+}
+
+fetchPost()
+  .then(res => console.log(res)) // traditional promise style
+  .catch(err => console.error(err));
+
+(async () => {
+  try {
+    const post = await fetchPost(); // async/await style
+    console.log("Awaited:", post);
+  } catch (err) {
+    console.error(err);
+  }
+})();
+
+
+// --- Async isn’t magic — it’s structured waiting ---
+/*
+Async/await is syntactic sugar over Promises.
+It helps structure asynchronous code in a synchronous-looking way,
+but it doesn’t make JS multithreaded.
+*/
+
+
+// --- Delay Simulator using setTimeout + Promises ---
+function delay(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms));
+}
+
+async function runDelays() {
+  console.log("Wait 1 second...");
+  await delay(1000);
+  console.log("Done!");
+}
+runDelays();
+
+
+// --- Fetch Multiple Users Sequentially ---
+async function fetchUserSequentially() {
+  const userIds = [1, 2, 3];
+  for (const id of userIds) {
+    const user = await new Promise(resolve => 
+      setTimeout(() => resolve(`User ${id}`), 1000)
+    );
+    console.log("Fetched:", user);
+  }
+}
+fetchUserSequentially();
+
+/*
+Key Notes:
+- Async functions always return Promises.
+- await pauses execution until the Promise resolves/rejects.
+- Promises flatten callback hell using .then/.catch.
+- Async/await improves readability with try/catch.
+- Async code still runs on the same single thread (via event loop).
+*/
+
+
+// --- 5. Fetch API + HTTP Basics ---
+
+// --- Fetch API: GET, POST Basics ---
+/*
+The Fetch API is a modern way to make HTTP requests.
+It returns a Promise that resolves to a Response object.
+By default, fetch uses the GET method.
+*/
+
+fetch("https://jsonplaceholder.typicode.com/posts/1")
+  .then(res => res.json())
+  .then(data => console.log("Fetched Post:", data))
+  .catch(err => console.error("Fetch failed:", err));
+
+
+// --- POST Request Example ---
+/*
+To send data, specify method, headers, and body in options.
+Body must be a string — usually JSON.
+*/
+
+fetch("https://jsonplaceholder.typicode.com/posts", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ title: "New Post", body: "Hello World!" })
+})
+  .then(res => res.json())
+  .then(data => console.log("Created:", data))
+  .catch(err => console.error("Error:", err));
+
+
+// --- Headers, Status Code, JSON Parsing ---
+/*
+Response headers and status can be checked using Response properties.
+Use response.json() or response.text() to parse data.
+*/
+
+fetch("https://jsonplaceholder.typicode.com/users")
+  .then(res => {
+    console.log("Status:", res.status); // e.g. 200
+    console.log("Content-Type:", res.headers.get("content-type"));
+    return res.json();
+  })
+  .then(users => console.log("Users:", users))
+  .catch(err => console.error("Fetch error:", err));
+
+
+// --- Form Submission via Fetch ---
+/*
+Prevent default form submission and send data manually using fetch.
+*/
+
+document.querySelector("form").addEventListener("submit", async (e) => {
+  e.preventDefault(); // prevent default form reload
+  const formData = new FormData(e.target);
+  const data = Object.fromEntries(formData.entries());
+
+  const res = await fetch("/api/submit", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(data)
+  });
+
+  if (res.ok) console.log("Form submitted!");
+  else console.error("Form submission failed");
+});
+
+
+// --- Error Handling with response.ok and try-catch ---
+/*
+fetch() does NOT throw an error for HTTP errors (like 404 or 500),
+only for network errors. Always check response.ok.
+*/
+
+async function safeFetch(url) {
+  try {
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP Error: ${res.status}`);
+    const data = await res.json();
+    console.log("Data:", data);
+  } catch (err) {
+    console.error("Fetch failed:", err.message);
+  }
+}
+safeFetch("https://jsonplaceholder.typicode.com/badendpoint");
+
+
+// --- Basic REST Principles ---
+/*
+RESTful APIs follow conventions using HTTP methods:
+GET    → retrieve data
+POST   → create new data
+PUT    → update existing data
+DELETE → remove data
+Each resource is identified by a URL endpoint.
+*/
+
+
+// --- Response Still Resolves Even If Status Is 400 ---
+/*
+fetch() resolves for all HTTP responses.
+You must check res.ok manually.
+*/
+
+fetch("/api/data").then(res => {
+  if (!res.ok) console.warn("Server error:", res.status);
+  return res.json();
+});
+
+
+// --- fetch Does Not Throw Unless Network Fails ---
+/*
+A 404, 500, or 403 response will NOT throw an error.
+Only network or CORS failures do.
+*/
+
+fetch("https://example.com/notfound")
+  .then(res => res.json())
+  .catch(err => console.error("Only thrown if network fails:", err));
+
+
+// --- You Are Talking to Servers — Expect Delay and Errors ---
+/*
+Always assume requests can fail or take time.
+Use loading spinners, retry logic, or graceful fallbacks.
+*/
+
+
+// --- Build User Search from an API ---
+async function searchUser(username) {
+  console.log("Searching for:", username);
+  try {
+    const res = await fetch(`https://api.github.com/users/${username}`);
+    if (!res.ok) throw new Error("User not found");
+    const user = await res.json();
+    console.log("User found:", user.login);
+  } catch (err) {
+    console.error(err.message);
+  }
+}
+searchUser("octocat");
+
+
+// --- Submit a Form and Show Live Success/Error Message ---
+async function submitFeedback(formData) {
+  try {
+    const res = await fetch("/api/feedback", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(formData)
+    });
+    if (res.ok) console.log("✅ Feedback submitted!");
+    else console.error("❌ Server error while submitting feedback.");
+  } catch (err) {
+    console.error("Network error:", err);
+  }
+}
+submitFeedback({ name: "Rishav", feedback: "Awesome site!" });
+
+
+/*
+Key Notes:
+- fetch() returns a Promise that resolves to Response.
+- Always check response.ok for server errors.
+- Use JSON.stringify() for request bodies and res.json() to parse.
+- Only network errors cause rejections.
+- REST APIs use standard HTTP methods (GET, POST, PUT, DELETE).
+- Handle latency and errors gracefully in UI.
+*/
+
+// --- Implicit Return in JavaScript ---
+
+/*
+Implicit return means returning a value automatically
+without using the `return` keyword.
+
+It mainly applies to **arrow functions** when written in a single line.
+*/
+
+// --- Example 1: Explicit return ---
+const add1 = (a, b) => {
+  return a + b; // uses return keyword
+};
+
+// --- Example 2: Implicit return ---
+const add2 = (a, b) => a + b; // automatically returns a + b
+
+console.log(add1(2, 3)); // 5
+console.log(add2(2, 3)); // 5
+
+
+// --- Rules ---
+// ✅ Works only when there's no curly braces { }
+// ❌ If you use { }, you must write `return` manually
+
+const square1 = x => x * x;       // implicit return
+const square2 = x => { x * x };   // undefined (no return)
+const square3 = x => { return x * x }; // correct explicit return
+
+
+// --- Example 3: Returning an object ---
+// Wrap the object in parentheses to avoid confusion with { }
+
+const makeUser = name => ({ name, role: "admin" });
+console.log(makeUser("Rishav")); // { name: 'Rishav', role: 'admin' }
+
+/*
+Summary:
+- Implicit return = no need for 'return' keyword.
+- Works only for concise arrow functions without { }.
+- Use parentheses when returning objects.
+*/
+
+
+// --- 6. Real-World APIs and Chaining ---
+
+/*
+Working with real-world APIs often involves making multiple asynchronous requests,
+processing responses, and dynamically updating the DOM with the received data.
+
+APIs (Application Programming Interfaces) act as bridges between your app and external data sources.
+*/
+
+
+// --- Chaining multiple fetch calls ---
+
+// You can chain fetch requests when one depends on the result of another.
+fetch("https://jsonplaceholder.typicode.com/users/1")
+  .then(res => res.json())
+  .then(user => {
+    console.log("User:", user);
+    return fetch(`https://jsonplaceholder.typicode.com/posts?userId=${user.id}`);
+  })
+  .then(res => res.json())
+  .then(posts => {
+    console.log("Posts:", posts);
+  })
+  .catch(err => console.error("Error:", err));
+
+
+// --- Using public APIs ---
+// Common free APIs:
+//  - TMDB (The Movie Database) → movie info
+//  - OpenWeatherMap → weather data
+//  - JSONPlaceholder → fake REST API for testing
+
+// Example: Fetching weather data from OpenWeather API
+async function getWeather(city) {
+  const apiKey = "YOUR_API_KEY"; // replace with your key
+  const res = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${city}&appid=${apiKey}`);
+  if (!res.ok) throw new Error("Failed to fetch weather data");
+  const data = await res.json();
+  console.log(`${data.name}: ${data.weather[0].description}`);
+}
+getWeather("Mumbai");
+
+
+// --- Render data dynamically on the DOM ---
+async function loadUsers() {
+  const res = await fetch("https://jsonplaceholder.typicode.com/users");
+  const users = await res.json();
+
+  const container = document.querySelector("#userList");
+  users.forEach(user => {
+    const div = document.createElement("div");
+    div.textContent = `${user.name} (${user.email})`;
+    container.append(div);
+  });
+}
+loadUsers();
+
+
+// --- Nested async operations (await inside loops) ---
+// Avoid deeply nested promises by using async/await
+async function getUserPosts() {
+  const users = await (await fetch("https://jsonplaceholder.typicode.com/users")).json();
+  for (const user of users) {
+    const posts = await (await fetch(`https://jsonplaceholder.typicode.com/posts?userId=${user.id}`)).json();
+    console.log(`${user.name} has ${posts.length} posts`);
+  }
+}
+getUserPosts();
+
+
+// --- Notes ---
+// - APIs return data asynchronously, so always handle Promises properly.
+// - Chaining helps when you need sequential async logic.
+// - Dynamic rendering lets you build UI directly from live API data.
+
+
+// --- Key Takeaways ---
+// APIs aren’t just endpoints — they’re building blocks for modern web apps.
+// Practice creating small projects using APIs such as:
+//  - Weather App (OpenWeather API)
+//  - Movie Search App (TMDB API)
+//  - User Post Renderer (JSONPlaceholder)
+
+// Real-world API skills are essential for connecting front-end interfaces to real data sources.
