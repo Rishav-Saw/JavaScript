@@ -2729,3 +2729,107 @@ getUserPosts();
 //  - User Post Renderer (JSONPlaceholder)
 
 // Real-world API skills are essential for connecting front-end interfaces to real data sources.
+
+
+// --- 7. Design Patterns in JavaScript ---
+
+/*
+Design patterns are reusable solutions to common software problems.
+They help structure code, avoid repetition, and make applications easier to maintain.
+JavaScript supports multiple patterns thanks to functions, closures, and prototypes.
+*/
+
+
+// --- Module Pattern (IIFE) ---
+// Uses an Immediately Invoked Function Expression to create private + public members.
+const CounterModule = (function () {
+  let count = 0; // private variable
+
+  return {
+    increment() { count++; },
+    decrement() { count--; },
+    getCount() { return count; }
+  };
+})();
+CounterModule.increment();
+console.log(CounterModule.getCount()); // 1
+
+
+// --- Revealing Module Pattern ---
+// Exposes only selected members while keeping others hidden.
+const UserModule = (function () {
+  let name = "Rishav"; // private
+
+  function changeName(newName) { name = newName; }
+  function getName() { return name; }
+
+  return { changeName, getName }; // revealing
+})();
+console.log(UserModule.getName()); // Rishav
+
+
+// --- Factory Function Pattern ---
+// Creates objects without using classes or constructors.
+function createUser(name, role) {
+  return {
+    name,
+    role,
+    describe() {
+      return `${name} is a ${role}`;
+    }
+  };
+}
+const uu1 = createUser("Alex", "Admin");
+console.log(uu1.describe());
+
+
+// --- Observer Pattern (Basic Pub-Sub) ---
+// Allows parts of code (subscribers) to react when an event happens (publish).
+class NotificationService {
+  constructor() {
+    this.subscribers = [];
+  }
+
+  subscribe(fn) {
+    this.subscribers.push(fn);
+  }
+
+  unsubscribe(fn) {
+    this.subscribers = this.subscribers.filter(sub => sub !== fn);
+  }
+
+  publish(message) {
+    this.subscribers.forEach(fn => fn(message));
+  }
+}
+
+// Usage
+const notifier = new NotificationService();
+function logger(msg) { console.log("Log:", msg); }
+function alertUser(msg) { console.log("Alert:", msg); }
+
+notifier.subscribe(logger);
+notifier.subscribe(alertUser);
+notifier.publish("New message received!"); // Notifies all subscribers
+
+
+// --- Module vs Factory ---
+// Module Pattern → returns a single instance with private data (singleton-like)
+// Factory Function → returns a new object each time (multiple instances)
+
+
+// --- IIFE vs Arrow Function ---
+// IIFE: executes immediately and supports its own `this` + private scope
+// Arrow functions: cannot be used as constructors and do NOT bind `this`
+// → So IIFE is preferred for module pattern, not arrow functions
+
+
+// --- Notes ---
+// Patterns are reusable strategies to solve frequent structural problems.
+// They give organization to complex JavaScript applications.
+
+
+// --- Practice ---
+// Build a Notification Service using Observer Pattern
+// Create UI modules using Module Pattern
+// Use Factory Pattern to generate reusable user or product objects
