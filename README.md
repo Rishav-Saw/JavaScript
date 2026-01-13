@@ -1926,14 +1926,3211 @@ let copy = fruits.slice(); // Copy entire array
 ```javascript
 let numbers = [1, 2, 3, 4, 5, 3];
 
-// indexOf() - find first index
-console.log(numbers.indexOf(3)); // 2
-console.log(numbers.indexOf(10)); // -1 (not found)
-console.log(numbers.indexOf(3, 3)); // 5 (start from index 3)
-
-// lastIndexOf() - find last index
-console.log(numbers.lastIndexOf(3)); // 5
-
 // includes() - check if exists (ES7)
 console.log(numbers.includes(3)); // true
-console.log(
+console.log(numbers.includes(10)); // false
+
+// find() - find first element that matches (ES6)
+let users = [
+    { id: 1, name: 'John', age: 30 },
+    { id: 2, name: 'Jane', age: 25 },
+    { id: 3, name: 'Bob', age: 35 }
+];
+
+let user = users.find(u => u.age > 30);
+console.log(user); // { id: 3, name: 'Bob', age: 35 }
+
+let notFound = users.find(u => u.age > 100);
+console.log(notFound); // undefined
+
+// findIndex() - find first index that matches (ES6)
+let index = users.findIndex(u => u.name === 'Jane');
+console.log(index); // 1
+
+// findLast() - find last element that matches (ES2023)
+let lastOver25 = users.findLast(u => u.age > 25);
+console.log(lastOver25); // { id: 3, name: 'Bob', age: 35 }
+
+// findLastIndex() - find last index that matches (ES2023)
+let lastIndex = users.findLastIndex(u => u.age > 25);
+console.log(lastIndex); // 2
+
+// some() - test if any element matches
+let hasAdult = users.some(u => u.age >= 18);
+console.log(hasAdult); // true
+
+let hasMinor = users.some(u => u.age < 18);
+console.log(hasMinor); // false
+
+// every() - test if all elements match
+let allAdults = users.every(u => u.age >= 18);
+console.log(allAdults); // true
+
+let allOver30 = users.every(u => u.age > 30);
+console.log(allOver30); // false
+```
+
+### Array Methods - Transformation
+
+```javascript
+let numbers = [1, 2, 3, 4, 5];
+
+// map() - transform each element
+let doubled = numbers.map(n => n * 2);
+console.log(doubled); // [2, 4, 6, 8, 10]
+
+let squared = numbers.map(n => n ** 2);
+console.log(squared); // [1, 4, 9, 16, 25]
+
+// Map with objects
+let users = [
+    { firstName: 'John', lastName: 'Doe' },
+    { firstName: 'Jane', lastName: 'Smith' }
+];
+
+let fullNames = users.map(u => `${u.firstName} ${u.lastName}`);
+console.log(fullNames); // ['John Doe', 'Jane Smith']
+
+// Map with index and array parameters
+let indexed = numbers.map((num, index, arr) => {
+    return `${num} at index ${index} of [${arr}]`;
+});
+
+// filter() - select elements that match condition
+let evens = numbers.filter(n => n % 2 === 0);
+console.log(evens); // [2, 4]
+
+let odds = numbers.filter(n => n % 2 !== 0);
+console.log(odds); // [1, 3, 5]
+
+let adults = users.filter(u => u.age >= 18);
+
+// reduce() - combine elements into single value
+let sum = numbers.reduce((accumulator, current) => {
+    return accumulator + current;
+}, 0);
+console.log(sum); // 15
+
+let product = numbers.reduce((acc, curr) => acc * curr, 1);
+console.log(product); // 120
+
+// Complex reduce example: grouping
+let people = [
+    { name: 'John', age: 30 },
+    { name: 'Jane', age: 25 },
+    { name: 'Bob', age: 30 },
+    { name: 'Alice', age: 25 }
+];
+
+let groupedByAge = people.reduce((groups, person) => {
+    let age = person.age;
+    if (!groups[age]) {
+        groups[age] = [];
+    }
+    groups[age].push(person);
+    return groups;
+}, {});
+console.log(groupedByAge);
+// { 25: [{name: 'Jane', age: 25}, {name: 'Alice', age: 25}],
+//   30: [{name: 'John', age: 30}, {name: 'Bob', age: 30}] }
+
+// reduceRight() - reduce from right to left
+let words = ['Hello', 'World', 'JavaScript'];
+let reversed = words.reduceRight((acc, word) => acc + ' ' + word);
+console.log(reversed); // JavaScript World Hello
+
+// flat() - flatten nested arrays (ES2019)
+let nested = [1, [2, 3], [4, [5, 6]]];
+console.log(nested.flat()); // [1, 2, 3, 4, [5, 6]] (1 level)
+console.log(nested.flat(2)); // [1, 2, 3, 4, 5, 6] (2 levels)
+console.log(nested.flat(Infinity)); // [1, 2, 3, 4, 5, 6] (all levels)
+
+// flatMap() - map then flat (1 level) (ES2019)
+let sentences = ['Hello world', 'How are you'];
+let words2 = sentences.flatMap(s => s.split(' '));
+console.log(words2); // ['Hello', 'world', 'How', 'are', 'you']
+
+// Same as:
+let words3 = sentences.map(s => s.split(' ')).flat();
+```
+
+### Array Methods - Sorting & Reversing
+
+```javascript
+let numbers = [3, 1, 4, 1, 5, 9, 2, 6];
+
+// sort() - sorts in place (mutates array)
+numbers.sort();
+console.log(numbers); // [1, 1, 2, 3, 4, 5, 6, 9]
+
+// ⚠️ Default sort converts to strings!
+let nums = [1, 2, 10, 21];
+nums.sort();
+console.log(nums); // [1, 10, 2, 21] - Wrong!
+
+// Correct numeric sort
+nums.sort((a, b) => a - b); // Ascending
+console.log(nums); // [1, 2, 10, 21]
+
+nums.sort((a, b) => b - a); // Descending
+console.log(nums); // [21, 10, 2, 1]
+
+// Sort objects
+let users = [
+    { name: 'John', age: 30 },
+    { name: 'Jane', age: 25 },
+    { name: 'Bob', age: 35 }
+];
+
+users.sort((a, b) => a.age - b.age); // By age ascending
+console.log(users); // Jane(25), John(30), Bob(35)
+
+users.sort((a, b) => a.name.localeCompare(b.name)); // By name
+console.log(users); // Bob, Jane, John
+
+// reverse() - reverse in place
+let arr = [1, 2, 3, 4, 5];
+arr.reverse();
+console.log(arr); // [5, 4, 3, 2, 1]
+
+// Non-mutating sort (ES2023: toSorted, toReversed)
+let original = [3, 1, 2];
+let sorted = original.toSorted(); // New array
+console.log(original); // [3, 1, 2] - unchanged
+console.log(sorted); // [1, 2, 3]
+
+let reversed = original.toReversed();
+console.log(original); // [3, 1, 2] - unchanged
+console.log(reversed); // [2, 1, 3]
+```
+
+### Array Methods - Other Useful Methods
+
+```javascript
+// join() - create string from array
+let fruits = ['apple', 'banana', 'orange'];
+let str = fruits.join(', ');
+console.log(str); // "apple, banana, orange"
+
+let path = ['home', 'user', 'documents'];
+console.log(path.join('/')); // "home/user/documents"
+
+// concat() - combine arrays (doesn't mutate)
+let arr1 = [1, 2, 3];
+let arr2 = [4, 5, 6];
+let combined = arr1.concat(arr2);
+console.log(combined); // [1, 2, 3, 4, 5, 6]
+
+let combined2 = arr1.concat(arr2, [7, 8]);
+console.log(combined2); // [1, 2, 3, 4, 5, 6, 7, 8]
+
+// Modern alternative: spread operator
+let combined3 = [...arr1, ...arr2];
+console.log(combined3); // [1, 2, 3, 4, 5, 6]
+
+// toString() - convert to string
+let numbers = [1, 2, 3];
+console.log(numbers.toString()); // "1,2,3"
+
+// fill() - fill with value
+let arr = new Array(5).fill(0);
+console.log(arr); // [0, 0, 0, 0, 0]
+
+let arr2 = [1, 2, 3, 4, 5];
+arr2.fill('x', 2, 4); // fill 'x' from index 2 to 4
+console.log(arr2); // [1, 2, 'x', 'x', 5]
+
+// copyWithin() - copy part of array to another location
+let arr3 = [1, 2, 3, 4, 5];
+arr3.copyWithin(0, 3); // Copy from index 3 to index 0
+console.log(arr3); // [4, 5, 3, 4, 5]
+
+// Array.isArray() - check if array
+console.log(Array.isArray([1, 2, 3])); // true
+console.log(Array.isArray('hello')); // false
+console.log(Array.isArray({ length: 5 })); // false
+
+// entries() - get iterator of [index, value] pairs
+let letters = ['a', 'b', 'c'];
+for (let [index, letter] of letters.entries()) {
+    console.log(`${index}: ${letter}`);
+}
+// 0: a, 1: b, 2: c
+
+// keys() - get iterator of indices
+for (let index of letters.keys()) {
+    console.log(index); // 0, 1, 2
+}
+
+// values() - get iterator of values
+for (let letter of letters.values()) {
+    console.log(letter); // a, b, c
+}
+```
+
+### Array Chaining
+
+```javascript
+// Combine multiple array methods
+let numbers = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+
+let result = numbers
+    .filter(n => n % 2 === 0)        // [2, 4, 6, 8, 10]
+    .map(n => n * 2)                  // [4, 8, 12, 16, 20]
+    .reduce((sum, n) => sum + n, 0);  // 60
+
+console.log(result); // 60
+
+// Complex example
+let users = [
+    { name: 'John', age: 30, active: true },
+    { name: 'Jane', age: 25, active: false },
+    { name: 'Bob', age: 35, active: true },
+    { name: 'Alice', age: 28, active: true }
+];
+
+let activeUserNames = users
+    .filter(u => u.active)
+    .map(u => u.name)
+    .sort();
+
+console.log(activeUserNames); // ['Alice', 'Bob', 'John']
+
+// Calculate average age of active users
+let avgAge = users
+    .filter(u => u.active)
+    .map(u => u.age)
+    .reduce((sum, age, _, arr) => sum + age / arr.length, 0);
+
+console.log(avgAge); // 31
+```
+
+### Multi-dimensional Arrays
+
+```javascript
+// 2D array (matrix)
+let matrix = [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+];
+
+console.log(matrix[0][0]); // 1
+console.log(matrix[1][2]); // 6
+console.log(matrix[2][1]); // 8
+
+// Iterate 2D array
+for (let i = 0; i < matrix.length; i++) {
+    for (let j = 0; j < matrix[i].length; j++) {
+        console.log(matrix[i][j]);
+    }
+}
+
+// Modern iteration
+matrix.forEach((row, i) => {
+    row.forEach((value, j) => {
+        console.log(`[${i}][${j}] = ${value}`);
+    });
+});
+
+// Tic-tac-toe board
+let board = [
+    ['X', 'O', 'X'],
+    ['O', 'X', 'O'],
+    ['O', 'X', 'X']
+];
+
+// 3D array
+let cube = [
+    [[1, 2], [3, 4]],
+    [[5, 6], [7, 8]]
+];
+console.log(cube[1][0][1]); // 6
+```
+
+---
+
+## Objects and Object-Oriented Programming
+
+### Creating Objects
+
+```javascript
+// Object literal (most common)
+let person = {
+    name: 'John',
+    age: 30,
+    city: 'New York'
+};
+
+// Empty object
+let emptyObj = {};
+
+// Object constructor
+let person2 = new Object();
+person2.name = 'Jane';
+person2.age = 25;
+
+// Object.create()
+let personProto = {
+    greet: function() {
+        console.log(`Hello, I'm ${this.name}`);
+    }
+};
+
+let john = Object.create(personProto);
+john.name = 'John';
+john.greet(); // Hello, I'm John
+
+// Constructor function (old way)
+function Person(name, age) {
+    this.name = name;
+    this.age = age;
+    this.greet = function() {
+        console.log(`Hi, I'm ${this.name}`);
+    };
+}
+
+let person3 = new Person('Bob', 35);
+person3.greet(); // Hi, I'm Bob
+
+// ES6 Class (modern way)
+class PersonClass {
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+    
+    greet() {
+        console.log(`Hello, I'm ${this.name}`);
+    }
+}
+
+let person4 = new PersonClass('Alice', 28);
+person4.greet(); // Hello, I'm Alice
+```
+
+### Accessing Properties
+
+```javascript
+let user = {
+    name: 'John',
+    age: 30,
+    'favorite-color': 'blue',
+    address: {
+        city: 'New York',
+        zip: '10001'
+    }
+};
+
+// Dot notation
+console.log(user.name); // John
+console.log(user.age); // 30
+
+// Bracket notation
+console.log(user['name']); // John
+console.log(user['age']); // 30
+
+// Required for special characters or variables
+console.log(user['favorite-color']); // blue
+
+let prop = 'name';
+console.log(user[prop]); // John
+
+// Nested objects
+console.log(user.address.city); // New York
+console.log(user['address']['zip']); // 10001
+
+// Optional chaining (ES2020)
+console.log(user.address?.city); // New York
+console.log(user.phone?.number); // undefined (no error)
+console.log(user.address?.country?.name); // undefined
+
+// Computed property names (ES6)
+let key = 'dynamicKey';
+let obj = {
+    [key]: 'value',
+    ['computed' + 'Name']: 'test'
+};
+console.log(obj.dynamicKey); // value
+console.log(obj.computedName); // test
+```
+
+### Modifying Objects
+
+```javascript
+let user = {
+    name: 'John',
+    age: 30
+};
+
+// Add property
+user.email = 'john@example.com';
+user['phone'] = '555-1234';
+
+// Modify property
+user.age = 31;
+user['name'] = 'John Doe';
+
+// Delete property
+delete user.phone;
+console.log(user.phone); // undefined
+
+// Check if property exists
+console.log('name' in user); // true
+console.log('phone' in user); // false
+
+// hasOwnProperty (doesn't check prototype)
+console.log(user.hasOwnProperty('name')); // true
+console.log(user.hasOwnProperty('toString')); // false
+
+// Property shorthand (ES6)
+let name = 'John';
+let age = 30;
+
+let person = { name, age }; // Same as { name: name, age: age }
+console.log(person); // { name: 'John', age: 30 }
+
+// Method shorthand (ES6)
+let calculator = {
+    // Old way
+    add: function(a, b) {
+        return a + b;
+    },
+    
+    // New way (shorthand)
+    subtract(a, b) {
+        return a - b;
+    }
+};
+```
+
+### Object Methods
+
+```javascript
+let user = {
+    name: 'John',
+    age: 30,
+    city: 'New York'
+};
+
+// Object.keys() - get array of keys
+let keys = Object.keys(user);
+console.log(keys); // ['name', 'age', 'city']
+
+// Object.values() - get array of values
+let values = Object.values(user);
+console.log(values); // ['John', 30, 'New York']
+
+// Object.entries() - get array of [key, value] pairs
+let entries = Object.entries(user);
+console.log(entries);
+// [['name', 'John'], ['age', 30], ['city', 'New York']]
+
+// Object.fromEntries() - create object from entries
+let newUser = Object.fromEntries(entries);
+console.log(newUser); // { name: 'John', age: 30, city: 'New York' }
+
+// Object.assign() - copy/merge objects
+let defaults = { theme: 'light', language: 'en' };
+let userPrefs = { theme: 'dark' };
+
+let settings = Object.assign({}, defaults, userPrefs);
+console.log(settings); // { theme: 'dark', language: 'en' }
+
+// Spread operator (modern alternative)
+let settings2 = { ...defaults, ...userPrefs };
+console.log(settings2); // { theme: 'dark', language: 'en' }
+
+// Object.freeze() - make immutable
+let config = { apiKey: 'abc123' };
+Object.freeze(config);
+config.apiKey = 'xyz'; // Silently fails (or error in strict mode)
+console.log(config.apiKey); // abc123
+
+// Object.seal() - prevent adding/deleting properties
+let obj = { name: 'John' };
+Object.seal(obj);
+obj.name = 'Jane'; // ✅ Allowed (can modify)
+obj.age = 30; // ❌ Not allowed (can't add)
+delete obj.name; // ❌ Not allowed (can't delete)
+
+// Object.isFrozen(), Object.isSealed()
+console.log(Object.isFrozen(config)); // true
+console.log(Object.isSealed(obj)); // true
+
+// Object.getOwnPropertyNames() - get all property names
+let allProps = Object.getOwnPropertyNames(user);
+
+// Object.getOwnPropertyDescriptors() - get property details
+let descriptors = Object.getOwnPropertyDescriptors(user);
+console.log(descriptors);
+```
+
+### this Keyword
+
+```javascript
+// Global context
+console.log(this); // Window (browser) or global (Node.js)
+
+// Function context
+function regularFunction() {
+    console.log(this); // Window (non-strict) or undefined (strict)
+}
+
+// Object method
+let person = {
+    name: 'John',
+    greet: function() {
+        console.log(this.name); // 'John' - this refers to person
+    },
+    
+    // Arrow function - this from outer scope
+    greetArrow: () => {
+        console.log(this.name); // undefined - this is not person!
+    }
+};
+
+person.greet(); // John
+person.greetArrow(); // undefined
+
+// Constructor function
+function Person(name) {
+    this.name = name; // this refers to new instance
+}
+let john = new Person('John');
+
+// Event handler
+// button.addEventListener('click', function() {
+//     console.log(this); // button element
+// });
+
+// button.addEventListener('click', () => {
+//     console.log(this); // Window/global (arrow function)
+// });
+
+// Explicit binding
+function greet() {
+    console.log(`Hello, ${this.name}`);
+}
+
+let user1 = { name: 'John' };
+let user2 = { name: 'Jane' };
+
+// call() - invoke immediately
+greet.call(user1); // Hello, John
+greet.call(user2); // Hello, Jane
+
+// With arguments
+function introduce(age, city) {
+    console.log(`I'm ${this.name}, ${age} years old from ${city}`);
+}
+introduce.call(user1, 30, 'NYC'); // I'm John, 30 years old from NYC
+
+// apply() - same as call but arguments as array
+introduce.apply(user1, [30, 'NYC']);
+
+// bind() - create new function with fixed this
+let greetJohn = greet.bind(user1);
+greetJohn(); // Hello, John (always uses user1)
+
+let greetJane = greet.bind(user2);
+greetJane(); // Hello, Jane
+
+// Partial application with bind
+function multiply(a, b) {
+    return a * b;
+}
+let double = multiply.bind(null, 2); // Fix first argument
+console.log(double(5)); // 10
+console.log(double(8)); // 16
+```
+
+### Prototypes and Inheritance
+
+```javascript
+// Every object has a prototype
+let obj = {};
+console.log(Object.getPrototypeOf(obj)); // Object.prototype
+
+// Constructor function with prototype
+function Person(name, age) {
+    this.name = name;
+    this.age = age;
+}
+
+// Add methods to prototype (shared by all instances)
+Person.prototype.greet = function() {
+    console.log(`Hello, I'm ${this.name}`);
+};
+
+Person.prototype.getAge = function() {
+    return this.age;
+};
+
+let john = new Person('John', 30);
+let jane = new Person('Jane', 25);
+
+john.greet(); // Hello, I'm John
+jane.greet(); // Hello, I'm Jane
+
+// Methods are shared (same reference)
+console.log(john.greet === jane.greet); // true
+
+// Prototype chain
+console.log(john.__proto__ === Person.prototype); // true
+console.log(Person.prototype.__proto__ === Object.prototype); // true
+console.log(Object.prototype.__proto__); // null (end of chain)
+
+// Inheritance with prototypes
+function Student(name, age, grade) {
+    Person.call(this, name, age); // Call parent constructor
+    this.grade = grade;
+}
+
+// Set up inheritance
+Student.prototype = Object.create(Person.prototype);
+Student.prototype.constructor = Student;
+
+// Add Student-specific methods
+Student.prototype.study = function() {
+    console.log(`${this.name} is studying`);
+};
+
+let student = new Student('Bob', 20, 'A');
+student.greet(); // Hello, I'm Bob (inherited)
+student.study(); // Bob is studying
+
+// Check prototype chain
+console.log(student instanceof Student); // true
+console.log(student instanceof Person); // true
+console.log(student instanceof Object); // true
+```
+
+### ES6 Classes
+
+```javascript
+// Class declaration
+class Person {
+    // Constructor
+    constructor(name, age) {
+        this.name = name;
+        this.age = age;
+    }
+    
+    // Instance method
+    greet() {
+        console.log(`Hello, I'm ${this.name}`);
+    }
+    
+    // Getter
+    get info() {
+        return `${this.name}, ${this.age} years old`;
+    }
+    
+    // Setter
+    set info(value) {
+        let [name, age] = value.split(', ');
+        this.name = name;
+        this.age = parseInt(age);
+    }
+    
+    // Static method (called on class, not instance)
+    static species() {
+        return 'Homo sapiens';
+    }
+    
+    // Private field (ES2022)
+    #secret = 'private value';
+    
+    getSecret() {
+        return this.#secret;
+    }
+}
+
+let john = new Person('John', 30);
+john.greet(); // Hello, I'm John
+console.log(john.info); // John, 30 years old
+john.info = 'Jane, 25';
+console.log(john.name); // Jane
+
+console.log(Person.species()); // Homo sapiens
+
+// Inheritance with extends
+class Student extends Person {
+    constructor(name, age, grade) {
+        super(name, age); // Call parent constructor
+        this.grade = grade;
+    }
+    
+    // Override method
+    greet() {
+        super.greet(); // Call parent method
+        console.log(`I'm a student with grade ${this.grade}`);
+    }
+    
+    // New method
+    study() {
+        console.log(`${this.name} is studying`);
+    }
+}
+
+let student = new Student('Bob', 20, 'A');
+student.greet();
+// Hello, I'm Bob
+// I'm a student with grade A
+student.study(); // Bob is studying
+
+// Static inheritance
+class Animal {
+    static type() {
+        return 'Animal';
+    }
+}
+
+class Dog extends Animal {
+    static type() {
+        return super.type() + ' - Dog';
+    }
+}
+
+console.log(Dog.type()); // Animal - Dog
+
+// Class expression
+const Rectangle = class {
+    constructor(width, height) {
+        this.width = width;
+        this.height = height;
+    }
+    
+    area() {
+        return this.width * this.height;
+    }
+};
+
+let rect = new Rectangle(10, 5);
+console.log(rect.area()); // 50
+```
+
+### Object Destructuring
+
+```javascript
+// Basic destructuring
+let user = {
+    name: 'John',
+    age: 30,
+    city: 'New York'
+};
+
+let { name, age, city } = user;
+console.log(name); // John
+console.log(age); // 30
+
+// Rename variables
+let { name: userName, age: userAge } = user;
+console.log(userName); // John
+console.log(userAge); // 30
+
+// Default values
+let { name: n, country = 'USA' } = user;
+console.log(n); // John
+console.log(country); // USA
+
+// Nested destructuring
+let person = {
+    name: 'John',
+    address: {
+        city: 'New York',
+        zip: '10001'
+    }
+};
+
+let { name: pName, address: { city: pCity, zip } } = person;
+console.log(pCity); // New York
+console.log(zip); // 10001
+
+// Rest operator
+let { name: n1, ...rest } = user;
+console.log(n1); // John
+console.log(rest); // { age: 30, city: 'New York' }
+
+// Function parameters
+function greet({ name, age }) {
+    console.log(`Hello ${name}, you are ${age} years old`);
+}
+greet(user); // Hello John, you are 30 years old
+
+// With defaults
+function createUser({ name = 'Guest', age = 0 } = {}) {
+    console.log(`${name}, ${age}`);
+}
+createUser({ name: 'John' }); // John, 0
+createUser({}); // Guest, 0
+createUser(); // Guest, 0
+```
+
+### Object Composition
+
+```javascript
+// Favor composition over inheritance
+
+// Mixins
+const canEat = {
+    eat(food) {
+        console.log(`Eating ${food}`);
+    }
+};
+
+const canWalk = {
+    walk() {
+        console.log('Walking...');
+    }
+};
+
+const canSwim = {
+    swim() {
+        console.log('Swimming...');
+    }
+};
+
+// Compose objects
+function Person(name) {
+    return {
+        name,
+        ...canEat,
+        ...canWalk
+    };
+}
+
+function Fish(name) {
+    return {
+        name,
+        ...canEat,
+        ...canSwim
+    };
+}
+
+let person = Person('John');
+person.eat('pizza'); // Eating pizza
+person.walk(); // Walking...
+
+let fish = Fish('Nemo');
+fish.eat('algae'); // Eating algae
+fish.swim(); // Swimming...
+
+// Object.assign for mixins
+const swimmer = Object.assign({}, canEat, canSwim);
+swimmer.eat('plankton');
+swimmer.swim();
+
+// Factory functions
+function createCar(make, model) {
+    let mileage = 0;
+    
+    return {
+        make,
+        model,
+        drive(miles) {
+            mileage += miles;
+            console.log(`Driving ${miles} miles`);
+        },
+        getMileage() {
+            return mileage;
+        }
+    };
+}
+
+let car = createCar('Toyota', 'Camry');
+car.drive(100);
+console.log(car.getMileage()); // 100
+console.log(car.mileage); // undefined (private!)
+```
+
+---
+
+## The DOM (Document Object Model)
+
+### Selecting Elements
+
+```javascript
+// getElementById
+let header = document.getElementById('header');
+
+// getElementsByClassName (returns HTMLCollection - live)
+let items = document.getElementsByClassName('item');
+console.log(items.length);
+
+// getElementsByTagName (returns HTMLCollection - live)
+let paragraphs = document.getElementsByTagName('p');
+
+// querySelector (returns first match)
+let firstItem = document.querySelector('.item');
+let button = document.querySelector('#submit-btn');
+let input = document.querySelector('input[type="text"]');
+
+// querySelectorAll (returns NodeList - static)
+let allItems = document.querySelectorAll('.item');
+let allButtons = document.querySelectorAll('button');
+
+// HTMLCollection vs NodeList
+// HTMLCollection: live, only elements, no forEach
+// NodeList: can be static, has forEach
+
+// Convert HTMLCollection to array
+let itemsArray = Array.from(items);
+itemsArray.forEach(item => console.log(item));
+
+// NodeList has forEach
+allItems.forEach(item => console.log(item));
+
+// Traversing
+let element = document.querySelector('.item');
+
+// Parent
+console.log(element.parentElement);
+console.log(element.parentNode);
+
+// Children
+console.log(element.children); // Only element nodes
+console.log(element.childNodes); // All nodes (including text)
+console.log(element.firstElementChild);
+console.log(element.lastElementChild);
+
+// Siblings
+console.log(element.nextElementSibling);
+console.log(element.previousElementSibling);
+
+// Closest (finds nearest ancestor matching selector)
+let closestDiv = element.closest('div');
+let closestContainer = element.closest('.container');
+
+// matches (check if element matches selector)
+console.log(element.matches('.item')); // true/false
+
+// contains (check if element contains another)
+let container = document.querySelector('.container');
+console.log(container.contains(element)); // true/false
+```
+
+### Modifying Elements
+
+```javascript
+// textContent - get/set text (including hidden elements)
+let div = document.querySelector('div');
+console.log(div.textContent);
+div.textContent = 'New text content';
+
+// innerText - get/set visible text only
+console.log(div.innerText);
+div.innerText = 'Visible text';
+
+// innerHTML - get/set HTML content
+console.log(div.innerHTML);
+div.innerHTML = '<strong>Bold text</strong>';
+
+// ⚠️ Security warning: innerHTML can be dangerous with user input
+// let userInput = '<img src=x onerror="alert(\'XSS\')">';
+// div.innerHTML = userInput; // ❌ XSS vulnerability!
+
+// Safe alternative: textContent or createElement
+div.textContent = userInput; // ✅ Safe (treats as text)
+
+// Modifying attributes
+let img = document.querySelector('img');
+
+// getAttribute, setAttribute
+console.log(img.getAttribute('src'));
+img.setAttribute('alt', 'Description');
+img.removeAttribute('title');
+
+// Direct property access
+console.log(img.src);
+img.src = 'new-image.jpg';
+img.alt = 'New description';
+
+// hasAttribute
+if (img.hasAttribute('data-id')) {
+    console.log('Has data-id attribute');
+}
+
+// data attributes (dataset)
+// <div data-user-id="123" data-role="admin"></div>
+let element = document.querySelector('div');
+console.log(element.dataset.userId); // "123"
+console.log(element.dataset.role); // "admin"
+element.dataset.status = 'active';
+
+// Class manipulation
+let box = document.querySelector('.box');
+
+// className (replaces all classes)
+box.className = 'box active';
+
+// classList (modern, recommended)
+box.classList.add('highlight');
+box.classList.add('big', 'red'); // Multiple classes
+box.classList.remove('active');
+box.classList.toggle('visible'); // Add if absent, remove if present
+box.classList.replace('old-class', 'new-class');
+console.log(box.classList.contains('highlight')); // true/false
+
+// Style manipulation
+let element2 = document.querySelector('.element');
+
+// Inline styles (camelCase)
+element2.style.color = 'red';
+element2.style.backgroundColor = 'yellow';
+element2.style.fontSize = '20px';
+element2.style.marginTop = '10px';
+
+// Remove style
+element2.style.color = '';
+
+// cssText (set multiple styles)
+element2.style.cssText = 'color: blue; font-size: 16px; margin: 20px;';
+
+// Get computed styles
+let styles = window.getComputedStyle(element2);
+console.log(styles.color);
+console.log(styles.fontSize);
+console.log(styles.getPropertyValue('background-color'));
+```
+
+### Creating and Removing Elements
+
+```javascript
+// createElement
+let div = document.createElement('div');
+div.textContent = 'New div';
+div.className = 'box';
+div.id = 'new-box';
+
+// createTextNode (rarely needed, textContent is easier)
+let text = document.createTextNode('Text node');
+
+// appendChild (add as last child)
+let container = document.querySelector('.container');
+container.appendChild(div);
+
+// append (modern, can append multiple nodes/strings)
+container.append(div, 'text', anotherElement);
+
+// prepend (add as first child)
+container.prepend(div);
+
+// insertBefore
+let referenceNode = document.querySelector('.reference');
+container.insertBefore(div, referenceNode);
+
+// Modern insertion methods (ES2016)
+// before, after, replaceWith
+let target = document.querySelector('.target');
+target.before(div); // Insert before target
+target.after(div); // Insert after target
+target.replaceWith(div); // Replace target with div
+
+// insertAdjacentHTML
+element.insertAdjacentHTML('beforebegin', '<p>Before element</p>');
+element.insertAdjacentHTML('afterbegin', '<p>First child</p>');
+element.insertAdjacentHTML('beforeend', '<p>Last child</p>');
+element.insertAdjacentHTML('afterend', '<p>After element</p>');
+
+// insertAdjacentElement, insertAdjacentText
+element.insertAdjacentElement('afterend', div);
+element.insertAdjacentText('beforeend', 'Text');
+
+// Cloning elements
+let original = document.querySelector('.original');
+let clone = original.cloneNode(); // Shallow clone (no children)
+let deepClone = original.cloneNode(true); // Deep clone (with children)
+
+// Removing elements
+let elementToRemove = document.querySelector('.remove-me');
+
+// Modern way
+elementToRemove.remove();
+
+// Old way (still works)
+elementToRemove.parentNode.removeChild(elementToRemove);
+
+// Remove all children
+container.innerHTML = ''; // Quick but not recommended
+// Or:
+while (container.firstChild) {
+    container.removeChild(container.firstChild);
+}
+// Or modern:
+container.replaceChildren(); // Removes all children
+
+// Creating complex elements
+function createCard(title, content) {
+    let card = document.createElement('div');
+    card.className = 'card';
+    
+    let cardTitle = document.createElement('h3');
+    cardTitle.textContent = title;
+    
+    let cardContent = document.createElement('p');
+    cardContent.textContent = content;
+    
+    card.appendChild(cardTitle);
+    card.appendChild(cardContent);
+    
+    return card;
+}
+
+let myCard = createCard('Title', 'This is the content');
+document.body.appendChild(myCard);
+```
+
+### Document Fragments
+
+```javascript
+// DocumentFragment - lightweight container for DOM operations
+// More efficient than repeated appendChild
+
+let fragment = document.createDocumentFragment();
+
+for (let i = 0; i < 100; i++) {
+    let li = document.createElement('li');
+    li.textContent = `Item ${i}`;
+    fragment.appendChild(li); // Append to fragment, not DOM
+}
+
+// Single DOM operation
+let ul = document.querySelector('ul');
+ul.appendChild(fragment); // Much faster!
+
+// Modern alternative: Build array then join
+let items = [];
+for (let i = 0; i < 100; i++) {
+    items.push(`<li>Item ${i}</li>`);
+}
+ul.innerHTML = items.join('');
+```
+
+---
+
+## Events
+
+### Adding Event Listeners
+
+```javascript
+// addEventListener (modern, recommended)
+let button = document.querySelector('button');
+
+button.addEventListener('click', function(event) {
+    console.log('Button clicked!');
+    console.log(event); // Event object
+});
+
+// Arrow function
+button.addEventListener('click', (e) => {
+    console.log('Clicked!', e);
+});
+
+// Named function (can be removed later)
+function handleClick(e) {
+    console.log('Handled!');
+}
+button.addEventListener('click', handleClick);
+
+// removeEventListener
+button.removeEventListener('click', handleClick);
+
+// ⚠️ Anonymous functions can't be removed
+// button.removeEventListener('click', function() { }); // Doesn't work!
+
+// Old way (avoid)
+button.onclick = function() {
+    console.log('Old way');
+};
+
+// Inline (avoid)
+// <button onclick="handleClick()">Click</button>
+
+// Multiple listeners
+button.addEventListener('click', listener1);
+button.addEventListener('click', listener2);
+button.addEventListener('click', listener3);
+
+// addEventListener options
+button.addEventListener('click', handler, {
+    once: true, // Remove after first call
+    capture: false, // Use capture phase (default: false)
+    passive: true // Never calls preventDefault (performance)
+});
+
+// Shorthand for once
+button.addEventListener('click', handler, { once: true });
+```
+
+### Event Object
+
+```javascript
+document.addEventListener('click', function(event) {
+    // Event properties
+    console.log(event.type); // 'click'
+    console.log(event.target); // Element that triggered event
+    console.log(event.currentTarget); // Element with listener (this)
+    console.log(event.timeStamp); // When event occurred
+    
+    // Mouse events
+    console.log(event.clientX, event.clientY); // Position relative to viewport
+    console.log(event.pageX, event.pageY); // Position relative to page
+    console.log(event.screenX, event.screenY); // Position relative to screen
+    console.log(event.button); // 0: left, 1: middle, 2: right
+    
+    // Keyboard modifiers
+    console.log(event.ctrlKey); // Ctrl pressed?
+    console.log(event.shiftKey); // Shift pressed?
+    console.log(event.altKey); // Alt pressed?
+    console.log(event.metaKey); // Cmd (Mac) or Windows key pressed?
+    
+    // Event methods
+    event.preventDefault(); // Prevent default behavior
+    event.stopPropagation(); // Stop bubbling
+    event.stopImmediatePropagation(); // Stop other listeners on same element
+});
+
+// Keyboard events
+document.addEventListener('keydown', function(e) {
+    console.log(e.key); // 'a', 'Enter', 'ArrowUp', etc.
+    console.log(e.code); // 'KeyA', 'Enter', 'ArrowUp', etc.
+    console.log(e.keyCode); // Deprecated
+    
+    if (e.key === 'Enter') {
+        console.log('Enter pressed');
+    }
+    
+    if (e.ctrlKey && e.key === 's') {
+        e.preventDefault(); // Prevent browser save dialog
+        console.log('Custom save');
+    }
+});
+```
+
+### Common Events
+
+```javascript
+// Mouse events
+element.addEventListener('click', handler); // Mouse click
+element.addEventListener('dblclick', handler); // Double click
+element.addEventListener('mousedown', handler); // Button pressed
+element.addEventListener('mouseup', handler); // Button released
+element.addEventListener('mousemove', handler); // Mouse moved
+element.addEventListener('mouseenter', handler); // Mouse enters (no bubble)
+element.addEventListener('mouseleave', handler); // Mouse leaves (no bubble)
+element.addEventListener('mouseover', handler); // Mouse enters (bubbles)
+element.addEventListener('mouseout', handler); // Mouse leaves (bubbles)
+element.addEventListener('contextmenu', handler); // Right click
+
+// Keyboard events
+element.addEventListener('keydown', handler); // Key pressed
+element.addEventListener('keyup', handler); // Key released
+element.addEventListener('keypress', handler); // Deprecated
+
+// Form events
+form.addEventListener('submit', handler); // Form submitted
+input.addEventListener('input', handler); // Value changed (immediate)
+input.addEventListener('change', handler); // Value changed (on blur)
+input.addEventListener('focus', handler); // Element focused
+input.addEventListener('blur', handler); // Element lost focus
+select.addEventListener('change', handler); // Selection changed
+
+// Window events
+window.addEventListener('load', handler); // Page fully loaded
+window.addEventListener('DOMContentLoaded', handler); // DOM loaded (faster)
+window.addEventListener('beforeunload', handler); // Before page unload
+window.addEventListener('unload', handler); // Page unloaded
+window.addEventListener('resize', handler); // Window resized
+window.addEventListener('scroll', handler); // Page scrolled
+
+// Touch events (mobile)
+element.addEventListener('touchstart', handler);
+element.addEventListener('touchmove', handler);
+element.addEventListener('touchend', handler);
+element.addEventListener('touchcancel', handler);
+
+// Drag and drop
+element.addEventListener('drag', handler);
+element.addEventListener('dragstart', handler);
+element.addEventListener('dragend', handler);
+element.addEventListener('dragover', handler);
+element.addEventListener('dragenter', handler);
+element.addEventListener('dragleave', handler);
+element.addEventListener('drop', handler);
+
+// Media events
+video.addEventListener('play', handler);
+video.addEventListener('pause', handler);
+video.addEventListener('ended', handler);
+video.addEventListener('volumechange', handler);
+video.addEventListener('timeupdate', handler);
+```
+
+### Event Bubbling and Capturing
+
+```javascript
+// Event bubbling (default) - events travel up the DOM tree
+// <div id="outer">
+//   <div id="middle">
+//     <button id="inner">Click</button>
+//   </div>
+// </div>
+
+let outer = document.querySelector('#outer');
+let middle = document.querySelector('#middle');
+let inner = document.querySelector('#inner');
+
+// Bubbling phase (default, false or undefined)
+outer.addEventListener('click', () => console.log('Outer'), false);
+middle.addEventListener('click', () => console.log('Middle'), false);
+inner.addEventListener('click', () => console.log('Inner'), false);
+
+// Click inner button: Inner -> Middle -> Outer
+
+// Capturing phase (true)
+outer.addEventListener('click', () => console.log('Outer'), true);
+middle.addEventListener('click', () => console.log('Middle'), true);
+inner.addEventListener('click', () => console.log('Inner'), true);
+
+// Click inner button: Outer -> Middle -> Inner
+
+// stopPropagation - stop bubbling
+inner.addEventListener('click', function(e) {
+    console.log('Inner');
+    e.stopPropagation(); // Stops here
+});
+// Click inner button: only Inner logs
+
+// stopImmediatePropagation - stop all listeners
+inner.addEventListener('click', function(e) {
+    console.log('First listener');
+    e.stopImmediatePropagation();
+});
+inner.addEventListener('click', function(e) {
+    console.log('Second listener'); // Never called
+});
+```
+
+### Event Delegation
+
+```javascript
+// Instead of adding listeners to many elements,
+// add one listener to parent and use event.target
+
+// ❌ Bad: Multiple listeners
+let buttons = document.querySelectorAll('.btn');
+buttons.forEach(btn => {
+    btn.addEventListener('click', function() {
+        console.log('Clicked:', this.textContent);
+    });
+});
+
+// ✅ Good: One listener with delegation
+let container = document.querySelector('.container');
+container.addEventListener('click', function(e) {
+    // Check if clicked element matches selector
+    if (e.target.matches('.btn')) {
+        console.log('Clicked:', e.target.textContent);
+    }
+});
+
+// Works with dynamically added elements!
+let newBtn = document.createElement('button');
+newBtn.className = 'btn';
+newBtn.textContent = 'New Button';
+container.appendChild(newBtn); // Event delegation still works!
+
+// Practical example: Todo list
+let todoList = document.querySelector('.todo-list');
+todoList.addEventListener('click', function(e) {
+    // Delete button
+    if (e.target.matches('.delete-btn')) {
+        e.target.closest('li').remove();
+    }
+    
+    // Complete button
+    if (e.target.matches('.complete-btn')) {
+        e.target.closest('li').classList.toggle('completed');
+    }
+});
+
+// closest() helps find ancestor matching selector
+document.addEventListener('click', function(e) {
+    let card = e.target.closest('.card');
+    if (card) {
+        console.log('Clicked somewhere in card');
+    }
+});
+```
+
+### Preventing Default Behavior
+
+```javascript
+// Prevent form submission
+let form = document.querySelector('form');
+form.addEventListener('submit', function(e) {
+    e.preventDefault(); // Don't submit/reload page
+    
+    // Custom form handling
+    let formData = new FormData(form);
+    console.log('Form data:', Object.fromEntries(formData));
+});
+
+// Prevent link navigation
+let link = document.querySelector('a');
+link.addEventListener('click', function(e) {
+    e.preventDefault();
+    console.log('Link clicked but not followed');
+});
+
+// Prevent context menu
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+    console.log('Right-click disabled');
+});
+
+// Prevent text selection
+document.addEventListener('selectstart', function(e) {
+    e.preventDefault();
+});
+
+// Prevent drag
+img.addEventListener('dragstart', function(e) {
+    e.preventDefault();
+});
+
+// Check if preventDefault can be called
+document.addEventListener('scroll', function(e) {
+    if (e.cancelable) {
+        e.preventDefault(); // Might not work if passive: true
+    }
+}, { passive: true }); // passive: true = never calls preventDefault
+```
+
+### Custom Events
+
+```javascript
+// Creating custom events
+let myEvent = new Event('myevent');
+
+// Dispatch event
+element.dispatchEvent(myEvent);
+
+// Listen for custom event
+element.addEventListener('myevent', function() {
+    console.log('Custom event fired!');
+});
+
+// CustomEvent with data
+let dataEvent = new CustomEvent('userlogin', {
+    detail: {
+        username: 'john',
+        timestamp: Date.now()
+    },
+    bubbles: true,
+    cancelable: true
+});
+
+document.addEventListener('userlogin', function(e) {
+    console.log('User logged in:', e.detail.username);
+    console.log('At:', new Date(e.detail.timestamp));
+});
+
+document.dispatchEvent(dataEvent);
+
+// Practical example: Component communication
+class Component {
+    constructor(element) {
+        this.element = element;
+    }
+    
+    emit(eventName, data) {
+        let event = new CustomEvent(eventName, {
+            detail: data,
+            bubbles: true
+        });
+        this.element.dispatchEvent(event);
+    }
+    
+    on(eventName, handler) {
+        this.element.addEventListener(eventName, handler);
+    }
+}
+
+let component = new Component(document.querySelector('.component'));
+component.on('datachanged', (e) => {
+    console.log('Data changed:', e.detail);
+});
+
+component.emit('datachanged', { newValue: 42 });
+```
+
+---
+
+## Asynchronous JavaScript
+
+### setTimeout and setInterval
+
+```javascript
+// setTimeout - execute once after delay
+setTimeout(function() {
+    console.log('Executed after 2 seconds');
+}, 2000);
+
+// With arrow function
+setTimeout(() => {
+    console.log('Arrow function');
+}, 1000);
+
+// With parameters
+function greet(name, greeting) {
+    console.log(`${greeting}, ${name}!`);
+}
+setTimeout(greet, 1000, 'John', 'Hello');
+
+// Clearing timeout
+let timeoutId = setTimeout(() => {
+    console.log('This will not run');
+}, 5000);
+
+clearTimeout(timeoutId); // Cancel timeout
+
+// setInterval - execute repeatedly
+let count = 0;
+let intervalId = setInterval(() => {
+    count++;
+    console.log(`Count: ${count}`);
+    
+    if (count >= 5) {
+        clearInterval(intervalId); // Stop after 5 times
+    }
+}, 1000);
+
+// Clearing interval
+clearInterval(intervalId);
+
+// ⚠️ setInterval doesn't wait for function to complete
+setInterval(() => {
+    // If this takes 2 seconds, next call starts immediately after
+    heavyOperation();
+}, 1000);
+
+// Solution: Use setTimeout recursively
+function repeatTask() {
+    heavyOperation();
+    setTimeout(repeatTask, 1000); // Waits for completion
+}
+repeatTask();
+
+// Practical example: Countdown timer
+function countdown(seconds) {
+    let remaining = seconds;
+    
+    let intervalId = setInterval(() => {
+        console.log(remaining);
+        remaining--;
+        
+        if (remaining < 0) {
+            clearInterval(intervalId);
+            console.log('Done!');
+        }
+    }, 1000);
+}
+
+countdown(5); // 5, 4, 3, 2, 1, 0, Done!
+```
+
+### Callbacks
+
+```javascript
+// Callback pattern
+function fetchData(callback) {
+    setTimeout(() => {
+        let data = { id: 1, name: 'John' };
+        callback(data);
+    }, 1000);
+}
+
+fetchData(function(data) {
+    console.log('Data received:', data);
+});
+
+// Error-first callback (Node.js convention)
+function fetchDataWithError(callback) {
+    setTimeout(() => {
+        let error = null;
+        let data = { id: 1, name: 'John' };
+        
+        if (Math.random() > 0.5) {
+            error = new Error('Failed to fetch');
+            data = null;
+        }
+        
+        callback(error, data);
+    }, 1000);
+}
+
+fetchDataWithError(function(err, data) {
+    if (err) {
+        console.error('Error:', err.message);
+        return;
+    }
+    console.log('Data:', data);
+});
+
+// Callback hell (pyramid of doom)
+fetchUser(function(user) {
+    fetchPosts(user.id, function(posts) {
+        fetchComments(posts[0].id, function(comments) {
+            fetchLikes(comments[0].id, function(likes) {
+                console.log(likes); // Deeply nested!
+            });
+        });
+    });
+});
+
+// Modern solution: Promises and async/await
+```
+
+### Promises
+
+```javascript
+// Creating a Promise
+let promise = new Promise(function(resolve, reject) {
+    // Async operation
+    setTimeout(() => {
+        let success = true;
+        
+        if (success) {
+            resolve('Operation successful!'); // Fulfilled
+        } else {
+            reject('Operation failed!'); // Rejected
+        }
+    }, 1000);
+});
+
+// Consuming a Promise
+promise
+    .then(result => {
+        console.log(result); // Operation successful!
+    })
+    .catch(error => {
+        console.error(error);
+    })
+    .finally(() => {
+        console.log('Promise settled'); // Always runs
+    });
+
+// Chaining Promises
+function fetchUser() {
+    return new Promise(resolve => {
+        setTimeout(() => resolve({ id: 1, name: 'John' }), 1000);
+    });
+}
+
+function fetchPosts(userId) {
+    return new Promise(resolve => {
+        setTimeout(() => resolve([
+            { id: 1, title: 'Post 1' },
+            { id: 2, title: 'Post 2' }
+        ]), 1000);
+    });
+}
+
+function fetchComments(postId) {
+    return new Promise(resolve => {
+        setTimeout(() => resolve([
+            { id: 1, text: 'Comment 1' },
+            { id: 2, text: 'Comment 2' }
+        ]), 1000);
+    });
+}
+
+// Clean chaining (no callback hell!)
+fetchUser()
+    .then(user => {
+        console.log('User:', user);
+        return fetchPosts(user.id);
+    })
+    .then(posts => {
+        console.log('Posts:', posts);
+        return fetchComments(posts[0].id);
+    })
+    .then(comments => {
+        console.log('Comments:', comments);
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+
+// Promise.resolve and Promise.reject
+let resolvedPromise = Promise.resolve('Immediate value');
+resolvedPromise.then(val => console.log(val));
+
+let rejectedPromise = Promise.reject('Error');
+rejectedPromise.catch(err => console.error(err));
+
+// Promise.all - wait for all promises
+let p1 = Promise.resolve(1);
+let p2 = Promise.resolve(2);
+let p3 = Promise.resolve(3);
+
+Promise.all([p1, p2, p3])
+    .then(results => {
+        console.log(results); // [1, 2, 3]
+    });
+
+// If any fails, Promise.all fails
+let p4 = Promise.reject('Error');
+Promise.all([p1, p2, p4])
+    .catch(error => {
+        console.error(error); // "Error"
+    });
+
+// Promise.allSettled - wait for all, don't fail
+Promise.allSettled([p1, p2, p4])
+    .then(results => {
+        console.log(results);
+        // [
+        //   { status: 'fulfilled', value: 1 },
+        //   { status: 'fulfilled', value: 2 },
+        //   { status: 'rejected', reason: 'Error' }
+        // ]
+    });
+
+// Promise.race - first to settle wins
+let slow = new Promise(resolve => setTimeout(() => resolve('slow'), 2000));
+let fast = new Promise(resolve => setTimeout(() => resolve('fast'), 1000));
+
+Promise.race([slow, fast])
+    .then(result => {
+        console.log(result); // "fast"
+    });
+
+// Promise.any - first to fulfill (ES2021)
+let p5 = Promise.reject('Error 1');
+let p6 = Promise.reject('Error 2');
+let p7 = Promise.resolve('Success');
+
+Promise.any([p5, p6, p7])
+    .then(result => {
+        console.log(result); // "Success"
+    });
+
+// If all reject, Promise.any rejects
+Promise.any([p5, p6])
+    .catch(error => {
+        console.error(error); // AggregateError: All promises were rejected
+    });
+```
+
+### Async/Await
+
+```javascript
+// Async function always returns a Promise
+async function myFunction() {
+    return 'Hello';
+}
+
+myFunction().then(result => console.log(result)); // Hello
+
+// Await - wait for Promise to resolve
+async function fetchData() {
+    let response = await fetch('https://api.example.com/data');
+    let data = await response.json();
+    return data;
+}
+
+// Error handling with try/catch
+async function fetchDataSafe() {
+    try {
+        let response = await fetch('https://api.example.com/data');
+        if (!response.ok) {
+            throw new Error('HTTP error');
+        }
+        let data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+// Sequential vs Parallel
+// ❌ Sequential (slower)
+async function sequential() {
+    let user = await fetchUser(); // Wait 1s
+    let posts = await fetchPosts(); // Wait 1s
+    let comments = await fetchComments(); // Wait 1s
+    // Total: 3s
+}
+
+// ✅ Parallel (faster)
+async function parallel() {
+    let [user, posts, comments] = await Promise.all([
+        fetchUser(),
+        fetchPosts(),
+        fetchComments()
+    ]);
+    // Total: 1s (all run simultaneously)
+}
+
+// Async/await with loops
+async function processItems(items) {
+    // Sequential processing
+    for (let item of items) {
+        await processItem(item); // One at a time
+    }
+    
+    // Parallel processing
+    await Promise.all(items.map(item => processItem(item)));
+}
+
+// Top-level await (ES2022) - in modules only
+// await fetchData(); // Works at module top level
+// let data = await fetch('https://api.example.com/data');
+
+// Practical example: Fetching data
+async function getUserData(userId) {
+    try {
+        // Fetch user
+        let userResponse = await fetch(`/api/users/${userId}`);
+        let user = await userResponse.json();
+        
+        // Fetch user's posts
+        let postsResponse = await fetch(`/api/posts?userId=${userId}`);
+        let posts = await postsResponse.json();
+        
+        return { user, posts };
+    } catch (error) {
+        console.error('Failed to fetch user data:', error);
+        throw error;
+    } finally {
+        console.log('Fetch attempt completed');
+    }
+}
+
+getUserData(1)
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+
+// Async IIFE
+(async () => {
+    let data = await fetchData();
+    console.log(data);
+})();
+
+// Converting callback to Promise
+function callbackToPromise() {
+    return new Promise((resolve, reject) => {
+        someCallbackFunction((err, data) => {
+            if (err) reject(err);
+            else resolve(data);
+        });
+    });
+}
+
+// Node.js util.promisify
+// const { promisify } = require('util');
+// const readFilePromise = promisify(fs.readFile);
+// let content = await readFilePromise('file.txt', 'utf8');
+```
+
+### Fetch API
+
+```javascript
+// GET request
+fetch('https://api.example.com/users')
+    .then(response => response.json())
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+
+// With async/await
+async function getUsers() {
+    try {
+        let response = await fetch('https://api.example.com/users');
+        let data = await response.json();
+        console.log(data);
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+// POST request
+async function createUser(userData) {
+    try {
+        let response = await fetch('https://api.example.com/users', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(userData)
+        });
+        
+        let data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Error:', error);
+    }
+}
+
+createUser({ name: 'John', email: 'john@example.com' });
+
+// PUT request (update)
+async function updateUser(userId, updates) {
+    let response = await fetch(`https://api.example.com/users/${userId}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(updates)
+    });
+    return await response.json();
+}
+
+// DELETE request
+async function deleteUser(userId) {
+    let response = await fetch(`https://api.example.com/users/${userId}`, {
+        method: 'DELETE'
+    });
+    return response.ok;
+}
+
+// Checking response status
+async function fetchWithErrorHandling(url) {
+    try {
+        let response = await fetch(url);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+        }
+        
+        let data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error;
+    }
+}
+
+// Response methods
+fetch(url)
+    .then(response => {
+        // response.json() - parse as JSON
+        // response.text() - get as text
+        // response.blob() - get as Blob (files)
+        // response.arrayBuffer() - get as ArrayBuffer
+        // response.formData() - get as FormData
+        
+        return response.json();
+    });
+
+// Headers
+let headers = new Headers();
+headers.append('Content-Type', 'application/json');
+headers.append('Authorization', 'Bearer token123');
+
+// Or use object
+let headers2 = {
+    'Content-Type': 'application/json',
+    'Authorization': 'Bearer token123'
+};
+
+fetch(url, { headers: headers2 });
+
+// Request options
+fetch(url, {
+    method: 'POST',
+    headers: {
+        'Content-Type': 'application/json'
+    },
+    body: JSON.stringify(data),
+    mode: 'cors', // cors, no-cors, same-origin
+    credentials: 'include', // include, same-origin, omit
+    cache: 'default', // default, no-store, reload, no-cache, force-cache
+    redirect: 'follow', // follow, error, manual
+    referrer: 'client', // client, no-referrer, URL
+    signal: abortController.signal // For aborting
+});
+
+// Abort fetch request
+let abortController = new AbortController();
+
+fetch(url, { signal: abortController.signal })
+    .then(response => response.json())
+    .catch(error => {
+        if (error.name === 'AbortError') {
+            console.log('Fetch aborted');
+        }
+    });
+
+// Abort after 5 seconds
+setTimeout(() => abortController.abort(), 5000);
+
+// Uploading files
+async function uploadFile(file) {
+    let formData = new FormData();
+    formData.append('file', file);
+    formData.append('description', 'My file');
+    
+    let response = await fetch('/upload', {
+        method: 'POST',
+        body: formData // Don't set Content-Type, browser sets it
+    });
+    
+    return await response.json();
+}
+
+// Progress tracking (not directly supported, use XMLHttpRequest)
+function fetchWithProgress(url, onProgress) {
+    return fetch(url)
+        .then(response => {
+            let contentLength = response.headers.get('content-length');
+            let total = parseInt(contentLength, 10);
+            let loaded = 0;
+            
+            let reader = response.body.getReader();
+            let chunks = [];
+            
+            return reader.read().then(function processResult(result) {
+                if (result.done) {
+                    return new Blob(chunks);
+                }
+                
+                chunks.push(result.value);
+                loaded += result.value.length;
+                
+                onProgress(loaded, total);
+                
+                return reader.read().then(processResult);
+            });
+        });
+}
+```
+
+---
+
+## Error Handling
+
+### try...catch
+
+```javascript
+// Basic try...catch
+try {
+    // Code that might throw error
+    let result = riskyOperation();
+    console.log(result);
+} catch (error) {
+    // Handle error
+    console.error('An error occurred:', error);
+}
+
+// Catching specific errors
+try {
+    JSON.parse('invalid json');
+} catch (error) {
+    if (error instanceof SyntaxError) {
+        console.error('JSON parsing error');
+    } else {
+        console.error('Unknown error');
+    }
+}
+
+// finally - always executes
+try {
+    console.log('Try block');
+    throw new Error('Something went wrong');
+} catch (error) {
+    console.error('Catch block:', error.message);
+} finally {
+    console.log('Finally block - always runs');
+}
+
+// Practical example: File operations
+function processFile(filename) {
+    let file = null;
+    
+    try {
+        file = openFile(filename);
+        let data = file.read();
+        return processData(data);
+    } catch (error) {
+        console.error('Error processing file:', error);
+        return null;
+    } finally {
+        if (file) {
+            file.close(); // Always close file
+        }
+    }
+}
+
+// try...catch with async/await
+async function fetchData() {
+    try {
+        let response = await fetch('https://api.example.com/data');
+        let data = await response.json();
+        return data;
+    } catch (error) {
+        console.error('Fetch failed:', error);
+        return null;
+    } finally {
+        console.log('Fetch attempt completed');
+    }
+}
+
+// Nested try...catch
+try {
+    try {
+        throw new Error('Inner error');
+    } catch (innerError) {
+        console.error('Caught inner:', innerError);
+        throw new Error('Outer error'); // Re-throw or throw new
+    }
+} catch (outerError) {
+    console.error('Caught outer:', outerError);
+}
+```
+
+### Throwing Errors
+
+```javascript
+// throw statement
+function divide(a, b) {
+    if (b === 0) {
+        throw new Error('Division by zero');
+    }
+    return a / b;
+}
+
+try {
+    let result = divide(10, 0);
+} catch (error) {
+    console.error(error.message); // Division by zero
+}
+
+// Throwing different types
+throw 'Error string'; // String
+throw 42; // Number
+throw { message: 'Error object' }; // Object
+throw new Error('Error object'); // Error (best practice)
+
+// Built-in Error types
+throw new Error('Generic error');
+throw new RangeError('Number out of range');
+throw new ReferenceError('Variable not defined');
+throw new SyntaxError('Invalid syntax');
+throw new TypeError('Wrong type');
+throw new URIError('URI error');
+
+// Custom Error classes
+class ValidationError extends Error {
+    constructor(message) {
+        super(message);
+        this.name = 'ValidationError';
+    }
+}
+
+class DatabaseError extends Error {
+    constructor(message, query) {
+        super(message);
+        this.name = 'DatabaseError';
+        this.query = query;
+    }
+}
+
+function validateUser(user) {
+    if (!user.email) {
+        throw new ValidationError('Email is required');
+    }
+    if (!user.email.includes('@')) {
+        throw new ValidationError('Invalid email format');
+    }
+}
+
+try {
+    validateUser({ email: 'invalid' });
+} catch (error) {
+    if (error instanceof ValidationError) {
+        console.error('Validation failed:', error.message);
+    } else {
+        console.error('Unknown error:', error);
+    }
+}
+
+// Error with custom properties
+class HttpError extends Error {
+    constructor(message, statusCode) {
+        super(message);
+        this.name = 'HttpError';
+        this.statusCode = statusCode;
+    }
+}
+
+throw new HttpError('Not Found', 404);
+```
+
+### Error Object
+
+```javascript
+let error = new Error('Something went wrong');
+
+// Error properties
+console.log(error.message); // Error message
+console.log(error.name); // 'Error'
+console.log(error.stack); // Stack trace (non-standard but widely supported)
+
+// Stack trace example
+function a() {
+    b();
+}
+function b() {
+    c();
+}
+function c() {
+    console.log(new Error().stack);
+    // Shows call chain: c -> b -> a
+}
+a();
+
+// Accessing error details
+try {
+    throw new Error('Test error');
+} catch (error) {
+    console.log('Name:', error.name);
+    console.log('Message:', error.message);
+    console.log('Stack:', error.stack);
+}
+```
+
+### Global Error Handling
+
+```javascript
+// Browser: window.onerror
+window.onerror = function(message, source, line, column, error) {
+    console.error('Global error:', message);
+    console.error('Source:', source);
+    console.error('Line:', line, 'Column:', column);
+    console.error('Error object:', error);
+    
+    // Return true to prevent default error handling
+    return true;
+};
+
+// Modern alternative: error event
+window.addEventListener('error', function(event) {
+    console.error('Error caught:', event.error);
+    console.error('Message:', event.message);
+});
+
+// Unhandled promise rejections
+window.addEventListener('unhandledrejection', function(event) {
+    console.error('Unhandled promise rejection:', event.reason);
+    event.preventDefault(); // Prevent default (console error)
+});
+
+// Example
+Promise.reject('This will be caught by unhandledrejection');
+
+// Node.js equivalents:
+// process.on('uncaughtException', handler);
+// process.on('unhandledRejection', handler);
+```
+
+### Best Practices
+
+```javascript
+// 1. Always use Error objects (not strings)
+// ❌ Bad
+throw 'Error message';
+
+// ✅ Good
+throw new Error('Error message');
+
+// 2. Be specific with error messages
+// ❌ Bad
+throw new Error('Error');
+
+// ✅ Good
+throw new Error('Failed to parse JSON: unexpected token at position 5');
+
+// 3. Don't swallow errors
+// ❌ Bad
+try {
+    riskyOperation();
+} catch (error) {
+    // Silent failure
+}
+
+// ✅ Good
+try {
+    riskyOperation();
+} catch (error) {
+    console.error('Operation failed:', error);
+    // Or re-throw, or handle appropriately
+}
+
+// 4. Use custom error types
+class ApiError extends Error {
+    constructor(message, statusCode, endpoint) {
+        super(message);
+        this.name = 'ApiError';
+        this.statusCode = statusCode;
+        this.endpoint = endpoint;
+    }
+}
+
+// 5. Fail fast - throw early
+function processUser(user) {
+    if (!user) {
+        throw new Error('User is required');
+    }
+    if (!user.id) {
+        throw new Error('User ID is required');
+    }
+    // Continue processing...
+}
+
+// 6. Async error handling
+// Always use try...catch with async/await
+async function fetchData() {
+    try {
+        let response = await fetch(url);
+        return await response.json();
+    } catch (error) {
+        console.error('Fetch error:', error);
+        throw error; // Re-throw if needed
+    }
+}
+
+// Or use .catch() with promises
+fetchData()
+    .then(data => console.log(data))
+    .catch(error => console.error(error));
+```
+
+---
+
+## ES6+ Modern Features
+
+### Template Literals
+
+```javascript
+// String interpolation
+let name = 'John';
+let age = 30;
+let message = `Hello, my name is ${name} and I'm ${age} years old.`;
+
+// Expressions
+let price = 10;
+let quantity = 3;
+let total = `Total: ${price * quantity}`; // Total: $30
+
+// Multi-line strings
+let html = `
+    <div>
+        <h1>Title</h1>
+        <p>Content</p>
+    </div>
+`;
+
+// Tagged templates
+function highlight(strings, ...values) {
+    return strings.reduce((result, str, i) => {
+        return result + str + (values[i] ? `<mark>${values[i]}</mark>` : '');
+    }, '');
+}
+
+let name2 = 'John';
+let age2 = 30;
+let output = highlight`Name: ${name2}, Age: ${age2}`;
+// Name: <mark>John</mark>, Age: <mark>30</mark>
+
+// Raw strings (escape sequences not processed)
+let path = String.raw`C:\Users\John\Documents`; // \ not escaped
+console.log(path); // C:\Users\John\Documents
+```
+
+### Destructuring
+
+```javascript
+// Array destructuring (covered earlier)
+let [a, b, c] = [1, 2, 3];
+let [first, , third] = [1, 2, 3]; // Skip elements
+let [x, ...rest] = [1, 2, 3, 4, 5]; // Rest operator
+
+// Object destructuring (covered earlier)
+let { name, age } = { name: 'John', age: 30 };
+let { name: userName, age: userAge } = user; // Rename
+let { name: n, country = 'USA' } = user; // Default value
+
+// Nested destructuring
+let person = {
+    name: 'John',
+    address: {
+        city: 'NYC',
+        zip: '10001'
+    }
+};
+let { name: pName, address: { city } } = person;
+
+// Function parameters
+function greet({ name, age = 0 }) {
+    console.log(`${name}, ${age}`);
+}
+greet({ name: 'John', age: 30 });
+
+// Swapping variables
+let a1 = 1, b1 = 2;
+[a1, b1] = [b1, a1];
+console.log(a1, b1); // 2, 1
+```
+
+### Spread and Rest Operators
+
+```javascript
+// Spread operator (...) - expand array/object
+
+// Array spread
+let arr1 = [1, 2, 3];
+let arr2 = [4, 5, 6];
+let combined = [...arr1, ...arr2]; // [1, 2, 3, 4, 5, 6]
+let withExtra = [0, ...arr1, 3.5, ...arr2, 7]; // [0, 1, 2, 3, 3.5, 4, 5, 6, 7]
+
+// Copy array
+let original = [1, 2, 3];
+let copy = [...original]; // Shallow copy
+
+// Array to function arguments
+let numbers = [1, 2, 3];
+console.log(Math.max(...numbers)); // 3
+// Same as: Math.max(1, 2, 3)
+
+// Object spread
+let obj1 = { a: 1, b: 2 };
+let obj2 = { c: 3, d: 4 };
+let merged = { ...obj1, ...obj2 }; // { a: 1, b: 2, c: 3, d: 4 }
+
+// Copy object
+let user = { name: 'John', age: 30 };
+let userCopy = { ...user }; // Shallow copy
+
+// Override properties
+let defaults = { theme: 'light', fontSize: 14 };
+let userPrefs = { fontSize: 16 };
+let settings = { ...defaults, ...userPrefs }; // { theme: 'light', fontSize: 16 }
+
+// Add properties
+let extended = { ...user, email: 'john@example.com' };
+
+// Rest operator (...) - collect remaining items
+
+// Function parameters
+function sum(...numbers) {
+    return numbers.reduce((total, n) => total + n, 0);
+}
+console.log(sum(1, 2, 3, 4, 5)); // 15
+
+// With other parameters
+function greet(greeting, ...names) {
+    console.log(`${greeting}, ${names.join(' and ')}`);
+}
+greet('Hello', 'John', 'Jane', 'Bob'); // Hello, John and Jane and Bob
+
+// Array destructuring
+let [first, second, ...rest] = [1, 2, 3, 4, 5];
+console.log(first); // 1
+console.log(second); // 2
+console.log(rest); // [3, 4, 5]
+
+// Object destructuring
+let { name: n, ...others } = { name: 'John', age: 30, city: 'NYC' };
+console.log(n); // John
+console.log(others); // { age: 30, city: 'NYC' }
+```
+
+### Default Parameters
+
+```javascript
+// Function default parameters (covered earlier)
+function greet(name = 'Guest', greeting = 'Hello') {
+    console.log(`${greeting}, ${name}!`);
+}
+
+greet(); // Hello, Guest!
+greet('John'); // Hello, John!
+greet('John', 'Hi'); // Hi, John!
+
+// Default can be expressions
+function createUser(name, id = Date.now()) {
+    return { name, id };
+}
+
+// Default can reference previous parameters
+function greet(name, greeting = `Hello, ${name}`) {
+    console.log(greeting);
+}
+greet('John'); // Hello, John
+
+// undefined triggers default (null doesn't)
+greet('John', undefined); // Hello, John
+greet('John', null); // null
+
+// Destructuring with defaults
+function configure({ theme = 'light', fontSize = 14 } = {}) {
+    console.log(theme, fontSize);
+}
+
+configure(); // light 14
+configure({ theme: 'dark' }); // dark 14
+configure({}); // light 14
+```
+
+### Enhanced Object Literals
+
+```javascript
+// Property shorthand
+let name = 'John';
+let age = 30;
+let user = { name, age }; // { name: name, age: age }
+
+// Method shorthand
+let calculator = {
+    add(a, b) { // Instead of: add: function(a, b)
+        return a + b;
+    },
+    subtract(a, b) {
+        return a - b;
+    }
+};
+
+// Computed property names
+let propName = 'age';
+let user2 = {
+    name: 'John',
+    [propName]: 30, // age: 30
+    ['is' + 'Admin']: true // isAdmin: true
+};
+
+// Dynamic methods
+let methodName = 'greet';
+let obj = {
+    [methodName]() {
+        console.log('Hello');
+    }
+};
+obj.greet(); // Hello
+
+// Combining features
+function createUser(name, age) {
+    return {
+        name,
+        age,
+        greet() {
+            console.log(`Hi, I'm ${this.name}`);
+        },
+        [`is${name}`]: true
+    };
+}
+
+let john = createUser('John', 30);
+john.greet(); // Hi, I'm John
+console.log(john.isJohn); // true
+```
+
+### for...of Loop (covered earlier)
+
+```javascript
+// Iterates over iterable values
+let arr = [1, 2, 3];
+for (let value of arr) {
+    console.log(value); // 1, 2, 3
+}
+
+// Works with strings
+for (let char of 'hello') {
+    console.log(char); // h, e, l, l, o
+}
+
+// Works with Maps
+let map = new Map([['a', 1], ['b', 2]]);
+for (let [key, value] of map) {
+    console.log(key, value);
+}
+
+// Works with Sets
+let set = new Set([1, 2, 3]);
+for (let value of set) {
+    console.log(value);
+}
+```
+
+### Map and Set
+
+```javascript
+// Map - key-value pairs (keys can be any type)
+let map = new Map();
+
+// Set values
+map.set('name', 'John');
+map.set('age', 30);
+map.set(1, 'number key');
+map.set(true, 'boolean key');
+
+let obj = { id: 1 };
+map.set(obj, 'object key');
+
+// Get values
+console.log(map.get('name')); // John
+console.log(map.get(1)); // number key
+console.log(map.get(obj)); // object key
+
+// Check existence
+console.log(map.has('name')); // true
+console.log(map.has('email')); // false
+
+// Delete
+map.delete('age');
+
+// Size
+console.log(map.size); // 4
+
+// Clear all
+map.clear();
+
+// Initialize with array
+let map2 = new Map([
+    ['name', 'John'],
+    ['age', 30]
+]);
+
+// Iterate
+for (let [key, value] of map2) {
+    console.log(`${key}: ${value}`);
+}
+
+// Keys, values, entries
+for (let key of map2.keys()) {
+    console.log(key);
+}
+for (let value of map2.values()) {
+    console.log(value);
+}
+for (let [key, value] of map2.entries()) {
+    console.log(key, value);
+}
+
+// forEach
+map2.forEach((value, key) => {
+    console.log(`${key}: ${value}`);
+});
+
+// Convert to array
+let entries = Array.from(map2); // or [...map2]
+let keys = Array.from(map2.keys());
+let values = Array.from(map2.values());
+
+// Object vs Map
+// Map: any key type, ordered, has size property, iterable
+// Object: string/symbol keys, may have inherited properties
+
+// Set - unique values
+let set = new Set();
+
+// Add values
+set.add(1);
+set.add(2);
+set.add(3);
+set.add(2); // Duplicate ignored
+
+console.log(set.size); // 3
+
+// Check existence
+console.log(set.has(2)); // true
+
+// Delete
+set.delete(2);
+
+// Clear
+set.clear();
+
+// Initialize with array
+let set2 = new Set([1, 2, 3, 2, 1]); // [1, 2, 3]
+
+// Iterate
+for (let value of set2) {
+    console.log(value);
+}
+
+set2.forEach(value => {
+    console.log(value);
+});
+
+// Convert to array
+let array = Array.from(set2); // or [...set2]
+
+// Remove duplicates from array
+let numbers = [1, 2, 3, 2, 4, 1, 5];
+let unique = [...new Set(numbers)]; // [1, 2, 3, 4, 5]
+
+// WeakMap and WeakSet
+// Keys are objects only, garbage collected if no other references
+let weakMap = new WeakMap();
+let weakSet = new WeakSet();
+
+let key = { id: 1 };
+weakMap.set(key, 'value');
+weakSet.add(key);
+
+// When key is no longer referenced, entry is automatically removed
+```
+
+### Symbols (covered earlier)
+
+```javascript
+// Unique identifiers
+let sym1 = Symbol('description');
+let sym2 = Symbol('description');
+console.log(sym1 === sym2); // false
+
+// Use as object keys
+let user = {
+    name: 'John',
+    [sym1]: 'private value'
+};
+
+console.log(user[sym1]); // private value
+console.log(Object.keys(user)); // ['name'] - symbols not included
+
+// Well-known symbols
+Symbol.iterator;
+Symbol.toStringTag;
+Symbol.hasInstance;
+// etc.
+```
+
+### Iterators and Generators
+
+```javascript
+// Iterator - object with next() method
+let iterator = {
+    current: 0,
+    last: 5,
+    
+    next() {
+        if (this.current <= this.last) {
+            return {
+                value: this.current++,
+                done: false
+            };
+        } else {
+            return { done: true };
+        }
+    }
+};
+
+let result = iterator.next();
+while (!result.done) {
+    console.log(result.value); // 0, 1, 2, 3, 4, 5
+    result = iterator.next();
+}
+
+// Making objects iterable
+let range = {
+    from: 1,
+    to: 5,
+    
+    [Symbol.iterator]() {
+        return {
+            current: this.from,
+            last: this.to,
+            
+            next() {
+                if (this.current <= this.last) {
+                    return { value: this.current++, done: false };
+                } else {
+                    return { done: true };
+                }
+            }
+        };
+    }
+};
+
+for (let num of range) {
+    console.log(num); // 1, 2, 3, 4, 5
+}
+
+// Generator functions - easier way to create iterators
+function* generateSequence() {
+    yield 1;
+    yield 2;
+    yield 3;
+}
+
+let generator = generateSequence();
+console.log(generator.next()); // { value: 1, done: false }
+console.log(generator.next()); // { value: 2, done: false }
+console.log(generator.next()); // { value: 3, done: false }
+console.log(generator.next()); // { value: undefined, done: true }
+
+// Use in for...of
+for (let value of generateSequence()) {
+    console.log(value); // 1, 2, 3
+}
+
+// Generator with logic
+function* generateRange(start, end) {
+    for (let i = start; i <= end; i++) {
+        yield i;
+    }
+}
+
+for (let num of generateRange(1, 5)) {
+    console.log(num); // 1, 2, 3, 4, 5
+}
+
+// Infinite generator
+function* infiniteSequence() {
+    let i = 0;
+    while (true) {
+        yield i++;
+    }
+}
+
+let infinite = infiniteSequence();
+console.log(infinite.next().value); // 0
+console.log(infinite.next().value); // 1
+console.log(infinite.next().value); // 2
+
+// Generator with return
+function* genWithReturn() {
+    yield 1;
+    yield 2;
+    return 3; // Final value
+    yield 4; // Never reached
+}
+
+let gen = genWithReturn();
+console.log(gen.next()); // { value: 1, done: false }
+console.log(gen.next()); // { value: 2, done: false }
+console.log(gen.next()); // { value: 3, done: true }
+
+// yield* - delegate to another generator
+function* gen1() {
+    yield 1;
+    yield 2;
+}
+
+function* gen2() {
+    yield 'a';
+    yield* gen1(); // Delegate to gen1
+    yield 'b';
+}
+
+for (let value of gen2()) {
+    console.log(value); // a, 1, 2, b
+}
+
+// Practical example: ID generator
+function* idGenerator() {
+    let id = 1;
+    while (true) {
+        yield id++;
+    }
+}
+
+let idGen = idGenerator();
+console.log(idGen.next().value); // 1
+console.log(idGen.next().value); // 2
+console.log(idGen.next().value); // 3
+
+// Async generators (ES2018)
+async function* asyncGenerator() {
+    yield await Promise.resolve(1);
+    yield await Promise.resolve(2);
+    yield await Promise.resolve(3);
+}
+
+(async () => {
+    for await (let value of asyncGenerator()) {
+        console.log(value); // 1, 2, 3
+    }
+})();
+```
+
+---
+
+## Modules
+
+### ES6 Modules (Import/Export)
+
+```javascript
+// ==== math.js ====
+// Named exports
+export function add(a, b) {
+    return a + b;
+}
+
+export function subtract(a, b) {
+    return a - b;
+}
+
+export const PI = 3.14159;
+
+// Export after declaration
+function multiply(a, b) {
+    return a * b;
+}
+export { multiply };
+
+// Export with rename
+function div(a, b) {
+    return a / b;
+}
+export { div as divide };
+
+// ==== app.js ====
+// Named imports
+import { add, subtract, PI } from './math.js';
+
+console.log(add(5, 3)); // 8
+console.log(PI); // 3.14159
+
+// Import with rename
+import { divide as div } from './math.js';
+
+// Import all
+import * as math from './math.js';
+console.log(math.add(5, 3)); // 8
+console.log(math.PI); // 3.14159
+
+// ==== user.js ====
+// Default export (one per module)
+export default class User {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+// Or
+class User2 {
+    constructor(name) {
+        this.name = name;
+    }
+}
+export default User2;
+
+// Or function
+export default function greet(name) {
+    return `Hello, ${name}`;
+}
+
+// ==== app.js ====
+// Import default (any name)
+import User from './user.js';
+import MyUser from './user.js'; // Different name OK
+
+let user = new User('John');
+
+// Mix default and named exports
+// ==== utils.js ====
+export default function main() {
+    console.log('Main function');
+}
+
+export function helper1() { }
+export function helper2() { }
+
+// ==== app.js ====
+import main, { helper1, helper2 } from './utils.js';
+
+// Dynamic imports (ES2020)
+// Load module conditionally or on-demand
+async function loadModule() {
+    if (condition) {
+        const module = await import('./math.js');
+        console.log(module.add(5, 3));
+    }
+}
+
+// Load on button click
+button.addEventListener('click', async () => {
+    const { Chart } = await import('./chart.js');
+    new Chart();
+});
+
+// Re-exports
+// ==== index.js ====
+export { add, subtract } from './math.js';
+export { default as User } from './user.js';
+export * from './utils.js'; // Export all
+export * as math from './math.js'; // Export as namespace
+
+// HTML usage
+// <script type="module" src="app.js"></script>
+
+// Module features:
+// - Always in strict mode
+// - Top-level 'this' is undefined
+// - Import/export only at top level (before ES2020)
+// - Modules are deferred by default
+```
+
+### CommonJS (Node.js)
+
+```javascript
+// ==== math.js ====
+// Exports
+function add(a, b) {
+    return a + b;
+}
+
+function subtract(a, b) {
+    return a - b;
+}
+
+module.exports = {
+    add,
+    subtract
+};
+
+// Or
+exports.add = add;
+exports.subtract = subtract;
+
+// Default export
+module.exports = function() {
+    console.log('Default export');
+};
+
+// ==== app.js ====
+// Imports
+const math = require('./math.js');
+console.log(math.add(5, 3));
+
+// Destructuring
+const { add, subtract } = require('./math.js');
+
+// Default import
+const myFunction = require('./math.js');
+```
+
+---
+
+## Advanced Concepts
+
+### Closures (covered earlier)
+
+```javascript
+// Function remembers outer scope variables
+function outer() {
+    let count = 0;
+    return function inner() {
+        count++;
+        console.log(count);
+    };
+}
+
+let increment = outer();
+increment(); // 1
+increment(); // 2
+```
+
+### Hoisting
+
+```javascript
+// Variable hoisting
+console.log(x); // undefined (declared but not initialized)
+var x = 5;
+
+// Equivalent to:
+var x;
+console.log(x);
+x = 5;
+
+// let and const are NOT hoisted (Temporal Dead Zone)
+// console.log(y); // ReferenceError
+let y = 5;
+
+// Function hoisting (function declarations)
+greet(); // Works! Function is hoisted
+function greet() {
+    console.log('Hello');
+}
+
+// Function expressions are NOT hoisted
+// sayHi(); // TypeError: sayHi is not a function
+var sayHi = function() {
+    console.log('Hi');
+};
+
+// Class declarations are NOT hoisted
+// let user = new User(); // ReferenceError
+class User { }
+```
+
+### Scope and Scope Chain
+
+```javascript
+// Global scope
+let globalVar = 'global';
+
+function outer() {
+    // Function scope
+    let outerVar = 'outer';
+    
+    function inner() {
+        // Function scope
+        let innerVar = 'inner';
+        
+        // Can access all outer scopes
+        console.log(innerVar); // 'inner'
+        console.log(outerVar); // 'outer'
+        console.log(globalVar); // 'global'
+    }
+    
+    inner();
+    // console.log(innerVar); // ReferenceError
+}
+
+outer();
+
+// Block scope (let, const)
+if (true) {
+    let blockVar = 'block';
+    const blockConst = 'const';
+    var functionVar = 'function'; // var ignores blocks!
+}
+
+// console.log(blockVar); // ReferenceError
+// console.log(blockConst); // ReferenceError
+console.log(functionVar); // 'function'
+
+// Lexical scope
+function outer2() {
+    let name = 'outer';
+    
+    function inner2() {
+        console.log(name); // Looks up scope chain
+    }
+    
+    inner2(); // 'outer'
+}
+```
+
+### Immediately Invoked Function Expression (IIFE) (covered earlier)
+
+```javascript
+// Create private scope
+(function() {
+    let private = 'secret';
+    console.log(private);
+})();
+
+// console.log(private); // ReferenceError
+```
+
+### Call, Apply, Bind (covered earlier)
+
+```javascript
+function greet(greeting, punctuation) {
+    console
