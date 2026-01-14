@@ -5133,4 +5133,2998 @@ function outer2() {
 
 ```javascript
 function greet(greeting, punctuation) {
-    console
+    console.log(`${greeting}, ${this.name}${punctuation}`);
+}
+
+let user1 = { name: 'John' };
+let user2 = { name: 'Jane' };
+
+// call() - invoke with specific this, individual arguments
+greet.call(user1, 'Hello', '!'); // Hello, John!
+greet.call(user2, 'Hi', '.'); // Hi, Jane.
+
+// apply() - invoke with specific this, arguments as array
+greet.apply(user1, ['Hello', '!']); // Hello, John!
+
+// bind() - create new function with fixed this
+let greetJohn = greet.bind(user1);
+greetJohn('Hello', '!'); // Hello, John!
+greetJohn('Hi', '.'); // Hi, John! (always uses user1)
+
+// Partial application with bind
+let greetJohnHello = greet.bind(user1, 'Hello');
+greetJohnHello('!'); // Hello, John!
+
+// Real-world example: setTimeout
+let person = {
+    name: 'John',
+    greet() {
+        console.log(`Hello, ${this.name}`);
+    }
+};
+
+// Problem: this is lost
+setTimeout(person.greet, 1000); // Hello, undefined
+
+// Solution 1: Arrow function
+setTimeout(() => person.greet(), 1000); // Hello, John
+
+// Solution 2: bind
+setTimeout(person.greet.bind(person), 1000); // Hello, John
+```
+
+### Function Currying
+
+```javascript
+// Currying - transform function with multiple arguments
+// into sequence of functions with single argument
+
+// Normal function
+function add(a, b, c) {
+    return a + b + c;
+}
+console.log(add(1, 2, 3)); // 6
+
+// Curried version
+function curriedAdd(a) {
+    return function(b) {
+        return function(c) {
+            return a + b + c;
+        };
+    };
+}
+console.log(curriedAdd(1)(2)(3)); // 6
+
+// Arrow function version
+const curriedAddArrow = a => b => c => a + b + c;
+console.log(curriedAddArrow(1)(2)(3)); // 6
+
+// Generic curry function
+function curry(fn) {
+    return function curried(...args) {
+        if (args.length >= fn.length) {
+            return fn.apply(this, args);
+        } else {
+            return function(...args2) {
+                return curried.apply(this, args.concat(args2));
+            };
+        }
+    };
+}
+
+// Usage
+function sum(a, b, c) {
+    return a + b + c;
+}
+
+let curriedSum = curry(sum);
+console.log(curriedSum(1)(2)(3)); // 6
+console.log(curriedSum(1, 2)(3)); // 6
+console.log(curriedSum(1)(2, 3)); // 6
+
+// Practical example: Configuration
+function apiCall(method) {
+    return function(endpoint) {
+        return function(data) {
+            console.log(`${method} ${endpoint}`, data);
+            // Actual API call here
+        };
+    };
+}
+
+const get = apiCall('GET');
+const post = apiCall('POST');
+
+const getUsers = get('/users');
+const createUser = post('/users');
+
+getUsers(); // GET /users
+createUser({ name: 'John' }); // POST /users { name: 'John' }
+
+// Logging example
+function log(level) {
+    return function(message) {
+        console.log(`[${level.toUpperCase()}] ${message}`);
+    };
+}
+
+const info = log('info');
+const error = log('error');
+const warn = log('warn');
+
+info('Application started'); // [INFO] Application started
+error('Something went wrong'); // [ERROR] Something went wrong
+```
+
+### Memoization
+
+```javascript
+// Memoization - cache function results for performance
+
+// Without memoization (slow for repeated calls)
+function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+}
+
+console.time('fib');
+console.log(fibonacci(40)); // Takes several seconds
+console.timeEnd('fib');
+
+// With memoization
+function memoize(fn) {
+    const cache = {};
+    
+    return function(...args) {
+        const key = JSON.stringify(args);
+        
+        if (key in cache) {
+            console.log('From cache');
+            return cache[key];
+        }
+        
+        console.log('Computing...');
+        const result = fn.apply(this, args);
+        cache[key] = result;
+        return result;
+    };
+}
+
+const memoizedFib = memoize(function fibonacci(n) {
+    if (n <= 1) return n;
+    return fibonacci(n - 1) + fibonacci(n - 2);
+});
+
+console.time('memoFib');
+console.log(memoizedFib(40)); // Fast!
+console.timeEnd('memoFib');
+
+// Generic memoization with WeakMap (for object keys)
+function memoizeWithWeakMap(fn) {
+    const cache = new WeakMap();
+    
+    return function(obj, ...args) {
+        if (!cache.has(obj)) {
+            cache.set(obj, fn.call(this, obj, ...args));
+        }
+        return cache.get(obj);
+    };
+}
+
+// Practical example: Expensive calculations
+const expensiveOperation = memoize(function(data) {
+    console.log('Processing...');
+    // Simulate expensive operation
+    return data.reduce((sum, n) => sum + n * 2, 0);
+});
+
+let data = [1, 2, 3, 4, 5];
+console.log(expensiveOperation(data)); // Processing... 30
+console.log(expensiveOperation(data)); // From cache 30
+```
+
+### Debouncing and Throttling
+
+```javascript
+// Debouncing - delay execution until after delay has passed
+// since last call (useful for search inputs, resize events)
+
+function debounce(func, delay) {
+    let timeoutId;
+    
+    return function(...args) {
+        clearTimeout(timeoutId);
+        
+        timeoutId = setTimeout(() => {
+            func.apply(this, args);
+        }, delay);
+    };
+}
+
+// Usage: Search input
+const searchInput = document.querySelector('#search');
+
+const performSearch = debounce(function(query) {
+    console.log('Searching for:', query);
+    // API call here
+}, 500);
+
+searchInput.addEventListener('input', (e) => {
+    performSearch(e.target.value);
+});
+// User types "hello" - function only called once, 500ms after last keystroke
+
+// Throttling - limit execution to once per delay period
+// (useful for scroll events, mouse movements)
+
+function throttle(func, delay) {
+    let lastCall = 0;
+    
+    return function(...args) {
+        const now = Date.now();
+        
+        if (now - lastCall >= delay) {
+            lastCall = now;
+            func.apply(this, args);
+        }
+    };
+}
+
+// Usage: Scroll event
+const handleScroll = throttle(function() {
+    console.log('Scroll position:', window.scrollY);
+}, 1000);
+
+window.addEventListener('scroll', handleScroll);
+// Function called at most once per second, regardless of scroll frequency
+
+// Advanced debounce with immediate option
+function debounceAdvanced(func, delay, immediate = false) {
+    let timeoutId;
+    
+    return function(...args) {
+        const callNow = immediate && !timeoutId;
+        
+        clearTimeout(timeoutId);
+        
+        timeoutId = setTimeout(() => {
+            timeoutId = null;
+            if (!immediate) {
+                func.apply(this, args);
+            }
+        }, delay);
+        
+        if (callNow) {
+            func.apply(this, args);
+        }
+    };
+}
+
+// Usage: Button click (prevent double submission)
+const submitButton = document.querySelector('#submit');
+
+const handleSubmit = debounceAdvanced(function() {
+    console.log('Form submitted');
+}, 2000, true); // Immediate execution, then disabled for 2s
+
+submitButton.addEventListener('click', handleSubmit);
+```
+
+### Proxy and Reflect
+
+```javascript
+// Proxy - intercept and customize operations on objects
+
+// Basic proxy
+const target = {
+    name: 'John',
+    age: 30
+};
+
+const handler = {
+    // Trap for property access
+    get(target, property) {
+        console.log(`Getting ${property}`);
+        return target[property];
+    },
+    
+    // Trap for property assignment
+    set(target, property, value) {
+        console.log(`Setting ${property} to ${value}`);
+        target[property] = value;
+        return true; // Indicate success
+    }
+};
+
+const proxy = new Proxy(target, handler);
+
+console.log(proxy.name); // Getting name -> John
+proxy.age = 31; // Setting age to 31
+
+// Validation example
+const validator = {
+    set(target, property, value) {
+        if (property === 'age') {
+            if (typeof value !== 'number') {
+                throw new TypeError('Age must be a number');
+            }
+            if (value < 0) {
+                throw new RangeError('Age must be positive');
+            }
+        }
+        target[property] = value;
+        return true;
+    }
+};
+
+const person = new Proxy({}, validator);
+person.age = 30; // OK
+// person.age = -5; // RangeError
+// person.age = 'thirty'; // TypeError
+
+// Default values
+const withDefaults = {
+    get(target, property) {
+        return property in target ? target[property] : 'Not found';
+    }
+};
+
+const user = new Proxy({ name: 'John' }, withDefaults);
+console.log(user.name); // John
+console.log(user.email); // Not found
+
+// Array negative indexing
+const arrayHandler = {
+    get(target, property) {
+        const index = Number(property);
+        if (index < 0) {
+            return target[target.length + index];
+        }
+        return target[property];
+    }
+};
+
+const arr = new Proxy([1, 2, 3, 4, 5], arrayHandler);
+console.log(arr[-1]); // 5 (last element)
+console.log(arr[-2]); // 4 (second to last)
+
+// Observable pattern
+function makeObservable(target, callback) {
+    return new Proxy(target, {
+        set(target, property, value) {
+            callback(property, value);
+            target[property] = value;
+            return true;
+        }
+    });
+}
+
+const user2 = makeObservable({}, (property, value) => {
+    console.log(`Property ${property} changed to ${value}`);
+});
+
+user2.name = 'John'; // Property name changed to John
+user2.age = 30; // Property age changed to 30
+
+// All proxy traps
+const allTraps = {
+    get(target, property, receiver) { },
+    set(target, property, value, receiver) { },
+    has(target, property) { }, // 'in' operator
+    deleteProperty(target, property) { }, // delete operator
+    apply(target, thisArg, argumentsList) { }, // function call
+    construct(target, argumentsList, newTarget) { }, // new operator
+    getPrototypeOf(target) { },
+    setPrototypeOf(target, proto) { },
+    isExtensible(target) { },
+    preventExtensions(target) { },
+    getOwnPropertyDescriptor(target, property) { },
+    defineProperty(target, property, descriptor) { },
+    ownKeys(target) { }
+};
+
+// Reflect - companion to Proxy, provides default operations
+const obj = { name: 'John', age: 30 };
+
+// Get property
+console.log(Reflect.get(obj, 'name')); // John
+
+// Set property
+Reflect.set(obj, 'age', 31);
+console.log(obj.age); // 31
+
+// Check property existence
+console.log(Reflect.has(obj, 'name')); // true
+
+// Delete property
+Reflect.deleteProperty(obj, 'age');
+console.log(obj.age); // undefined
+
+// Using Reflect in proxy handlers
+const betterHandler = {
+    get(target, property, receiver) {
+        console.log(`Getting ${property}`);
+        return Reflect.get(target, property, receiver);
+    },
+    set(target, property, value, receiver) {
+        console.log(`Setting ${property}`);
+        return Reflect.set(target, property, value, receiver);
+    }
+};
+```
+
+### WeakMap and WeakSet
+
+```javascript
+// WeakMap - keys must be objects, garbage collected automatically
+
+let weakMap = new WeakMap();
+
+let obj1 = { id: 1 };
+let obj2 = { id: 2 };
+
+weakMap.set(obj1, 'data for obj1');
+weakMap.set(obj2, 'data for obj2');
+
+console.log(weakMap.get(obj1)); // data for obj1
+console.log(weakMap.has(obj2)); // true
+
+// When obj1 is no longer referenced, it's automatically removed
+obj1 = null; // Entry will be garbage collected
+
+// Use case: Private data for objects
+const privateData = new WeakMap();
+
+class Person {
+    constructor(name, age) {
+        privateData.set(this, { age }); // Private age
+        this.name = name; // Public name
+    }
+    
+    getAge() {
+        return privateData.get(this).age;
+    }
+    
+    setAge(age) {
+        privateData.get(this).age = age;
+    }
+}
+
+let person = new Person('John', 30);
+console.log(person.name); // John
+console.log(person.age); // undefined (private!)
+console.log(person.getAge()); // 30
+
+// Use case: Caching computed values
+const cache = new WeakMap();
+
+function process(obj) {
+    if (!cache.has(obj)) {
+        console.log('Computing...');
+        let result = expensiveOperation(obj);
+        cache.set(obj, result);
+    }
+    return cache.get(obj);
+}
+
+// WeakSet - holds objects only, garbage collected
+let weakSet = new WeakSet();
+
+let user1 = { name: 'John' };
+let user2 = { name: 'Jane' };
+
+weakSet.add(user1);
+weakSet.add(user2);
+
+console.log(weakSet.has(user1)); // true
+
+user1 = null; // Entry will be garbage collected
+
+// Use case: Marking objects
+const processedObjects = new WeakSet();
+
+function processObject(obj) {
+    if (processedObjects.has(obj)) {
+        console.log('Already processed');
+        return;
+    }
+    
+    // Process object
+    console.log('Processing...');
+    
+    processedObjects.add(obj);
+}
+
+let data = { id: 1 };
+processObject(data); // Processing...
+processObject(data); // Already processed
+
+// Differences from Map/Set:
+// - Keys/values must be objects
+// - Not iterable
+// - No size property
+// - No clear() method
+// - Entries are garbage collected when objects are no longer referenced
+```
+
+---
+
+## JavaScript in the Browser
+
+### Browser Object Model (BOM)
+
+```javascript
+// window - global object in browsers
+console.log(window.innerWidth); // Viewport width
+console.log(window.innerHeight); // Viewport height
+console.log(window.outerWidth); // Browser window width
+console.log(window.outerHeight); // Browser window height
+
+// Screen dimensions
+console.log(window.screen.width);
+console.log(window.screen.height);
+console.log(window.screen.availWidth); // Available width (minus taskbar)
+console.log(window.screen.availHeight);
+
+// Location
+console.log(window.location.href); // Full URL
+console.log(window.location.protocol); // http: or https:
+console.log(window.location.host); // hostname:port
+console.log(window.location.hostname); // hostname
+console.log(window.location.port); // port number
+console.log(window.location.pathname); // /path/to/page
+console.log(window.location.search); // ?query=string
+console.log(window.location.hash); // #anchor
+
+// Navigate
+window.location.href = 'https://example.com'; // Redirect
+window.location.assign('https://example.com'); // Same as above
+window.location.replace('https://example.com'); // No history entry
+window.location.reload(); // Reload page
+window.location.reload(true); // Force reload (ignore cache)
+
+// History
+window.history.back(); // Go back
+window.history.forward(); // Go forward
+window.history.go(-2); // Go back 2 pages
+window.history.go(1); // Go forward 1 page
+
+// History API (for SPAs)
+history.pushState({ page: 1 }, 'Title', '/page1'); // Add history entry
+history.replaceState({ page: 2 }, 'Title', '/page2'); // Replace current entry
+
+window.addEventListener('popstate', (event) => {
+    console.log('State:', event.state);
+});
+
+// Navigator
+console.log(navigator.userAgent); // Browser info
+console.log(navigator.language); // Browser language
+console.log(navigator.onLine); // Online/offline status
+console.log(navigator.cookieEnabled); // Cookies enabled?
+console.log(navigator.platform); // OS platform
+
+// Geolocation
+navigator.geolocation.getCurrentPosition(
+    (position) => {
+        console.log('Latitude:', position.coords.latitude);
+        console.log('Longitude:', position.coords.longitude);
+    },
+    (error) => {
+        console.error('Geolocation error:', error);
+    }
+);
+
+// Dialogs
+window.alert('Alert message'); // Alert dialog
+let confirmed = window.confirm('Are you sure?'); // Confirm dialog
+let input = window.prompt('Enter your name:', 'Default'); // Input dialog
+
+// Timers (covered earlier)
+let timeoutId = setTimeout(() => { }, 1000);
+let intervalId = setInterval(() => { }, 1000);
+clearTimeout(timeoutId);
+clearInterval(intervalId);
+
+// Open new window
+let newWindow = window.open('https://example.com', '_blank', 'width=600,height=400');
+newWindow.close();
+
+// Print
+window.print();
+
+// Scroll
+window.scrollTo(0, 0); // Scroll to top
+window.scrollTo(0, document.body.scrollHeight); // Scroll to bottom
+window.scrollBy(0, 100); // Scroll down 100px
+
+// Smooth scroll
+window.scrollTo({ top: 0, behavior: 'smooth' });
+
+// Element scroll
+element.scrollIntoView(); // Scroll element into view
+element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+
+// Page visibility API
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+        console.log('Page is hidden');
+    } else {
+        console.log('Page is visible');
+    }
+});
+```
+
+### Local Storage and Session Storage
+
+```javascript
+// localStorage - persists even after browser closes
+// sessionStorage - cleared when tab closes
+
+// Set item
+localStorage.setItem('username', 'John');
+localStorage.setItem('theme', 'dark');
+
+// Get item
+let username = localStorage.getItem('username'); // John
+let theme = localStorage.getItem('theme'); // dark
+
+// Remove item
+localStorage.removeItem('theme');
+
+// Clear all
+localStorage.clear();
+
+// Check existence
+if (localStorage.getItem('username')) {
+    console.log('Username exists');
+}
+
+// Store objects (must stringify)
+let user = { name: 'John', age: 30 };
+localStorage.setItem('user', JSON.stringify(user));
+
+// Retrieve and parse
+let storedUser = JSON.parse(localStorage.getItem('user'));
+console.log(storedUser.name); // John
+
+// sessionStorage works the same way
+sessionStorage.setItem('sessionData', 'value');
+let data = sessionStorage.getItem('sessionData');
+
+// Storage event (fires when storage changes in another tab)
+window.addEventListener('storage', (event) => {
+    console.log('Key:', event.key);
+    console.log('Old value:', event.oldValue);
+    console.log('New value:', event.newValue);
+    console.log('URL:', event.url);
+});
+
+// Storage size (varies by browser, typically 5-10MB)
+
+// Wrapper functions
+const storage = {
+    set(key, value) {
+        try {
+            localStorage.setItem(key, JSON.stringify(value));
+        } catch (error) {
+            console.error('Storage error:', error);
+        }
+    },
+    
+    get(key) {
+        try {
+            const item = localStorage.getItem(key);
+            return item ? JSON.parse(item) : null;
+        } catch (error) {
+            console.error('Storage error:', error);
+            return null;
+        }
+    },
+    
+    remove(key) {
+        localStorage.removeItem(key);
+    },
+    
+    clear() {
+        localStorage.clear();
+    }
+};
+
+// Usage
+storage.set('user', { name: 'John', age: 30 });
+let user2 = storage.get('user');
+```
+
+### Cookies
+
+```javascript
+// Cookies - small text data stored in browser
+
+// Set cookie
+document.cookie = 'username=John';
+document.cookie = 'theme=dark';
+
+// Set with expiry (days)
+function setCookie(name, value, days) {
+    let expires = '';
+    if (days) {
+        let date = new Date();
+        date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+        expires = '; expires=' + date.toUTCString();
+    }
+    document.cookie = name + '=' + value + expires + '; path=/';
+}
+
+setCookie('username', 'John', 7); // Expires in 7 days
+
+// Get cookie
+function getCookie(name) {
+    let nameEQ = name + '=';
+    let cookies = document.cookie.split(';');
+    
+    for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(nameEQ)) {
+            return cookie.substring(nameEQ.length);
+        }
+    }
+    return null;
+}
+
+let username2 = getCookie('username'); // John
+
+// Delete cookie
+function deleteCookie(name) {
+    document.cookie = name + '=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/';
+}
+
+deleteCookie('username');
+
+// Cookie options
+// path - URL path where cookie is valid
+// domain - Domain where cookie is valid
+// secure - Only sent over HTTPS
+// httpOnly - Not accessible via JavaScript (set server-side)
+// samesite - CSRF protection (Strict, Lax, None)
+
+document.cookie = 'token=abc123; path=/; secure; samesite=strict';
+
+// Cookie manager
+class CookieManager {
+    static set(name, value, options = {}) {
+        let cookieString = `${name}=${value}`;
+        
+        if (options.days) {
+            let date = new Date();
+            date.setTime(date.getTime() + (options.days * 24 * 60 * 60 * 1000));
+            cookieString += `; expires=${date.toUTCString()}`;
+        }
+        
+        if (options.path) {
+            cookieString += `; path=${options.path}`;
+        }
+        
+        if (options.domain) {
+            cookieString += `; domain=${options.domain}`;
+        }
+        
+        if (options.secure) {
+            cookieString += '; secure';
+        }
+        
+        if (options.sameSite) {
+            cookieString += `; samesite=${options.sameSite}`;
+        }
+        
+        document.cookie = cookieString;
+    }
+    
+    static get(name) {
+        let cookies = document.cookie.split(';');
+        for (let cookie of cookies) {
+            cookie = cookie.trim();
+            if (cookie.startsWith(name + '=')) {
+                return cookie.substring(name.length + 1);
+            }
+        }
+        return null;
+    }
+    
+    static delete(name) {
+        this.set(name, '', { days: -1 });
+    }
+}
+
+// Usage
+CookieManager.set('username', 'John', { days: 7, path: '/' });
+let user3 = CookieManager.get('username');
+CookieManager.delete('username');
+```
+
+### IndexedDB
+
+```javascript
+// IndexedDB - client-side database for large amounts of data
+
+// Open database
+let request = indexedDB.open('MyDatabase', 1);
+
+request.onerror = (event) => {
+    console.error('Database error:', event.target.error);
+};
+
+request.onsuccess = (event) => {
+    let db = event.target.result;
+    console.log('Database opened successfully');
+};
+
+// Create/upgrade database
+request.onupgradeneeded = (event) => {
+    let db = event.target.result;
+    
+    // Create object store (table)
+    let objectStore = db.createObjectStore('users', { keyPath: 'id', autoIncrement: true });
+    
+    // Create indexes
+    objectStore.createIndex('name', 'name', { unique: false });
+    objectStore.createIndex('email', 'email', { unique: true });
+};
+
+// Add data
+function addUser(db, user) {
+    let transaction = db.transaction(['users'], 'readwrite');
+    let objectStore = transaction.objectStore('users');
+    let request = objectStore.add(user);
+    
+    request.onsuccess = () => {
+        console.log('User added');
+    };
+    
+    request.onerror = () => {
+        console.error('Error adding user');
+    };
+}
+
+// Get data
+function getUser(db, id) {
+    let transaction = db.transaction(['users'], 'readonly');
+    let objectStore = transaction.objectStore('users');
+    let request = objectStore.get(id);
+    
+    request.onsuccess = (event) => {
+        let user = event.target.result;
+        console.log('User:', user);
+    };
+}
+
+// Update data
+function updateUser(db, user) {
+    let transaction = db.transaction(['users'], 'readwrite');
+    let objectStore = transaction.objectStore('users');
+    let request = objectStore.put(user);
+    
+    request.onsuccess = () => {
+        console.log('User updated');
+    };
+}
+
+// Delete data
+function deleteUser(db, id) {
+    let transaction = db.transaction(['users'], 'readwrite');
+    let objectStore = transaction.objectStore('users');
+    let request = objectStore.delete(id);
+    
+    request.onsuccess = () => {
+        console.log('User deleted');
+    };
+}
+
+// Get all data
+function getAllUsers(db) {
+    let transaction = db.transaction(['users'], 'readonly');
+    let objectStore = transaction.objectStore('users');
+    let request = objectStore.getAll();
+    
+    request.onsuccess = (event) => {
+        let users = event.target.result;
+        console.log('All users:', users);
+    };
+}
+
+// Using cursor to iterate
+function iterateUsers(db) {
+    let transaction = db.transaction(['users'], 'readonly');
+    let objectStore = transaction.objectStore('users');
+    let request = objectStore.openCursor();
+    
+    request.onsuccess = (event) => {
+        let cursor = event.target.result;
+        if (cursor) {
+            console.log('User:', cursor.value);
+            cursor.continue(); // Move to next
+        }
+    };
+}
+
+// Using index
+function getUserByEmail(db, email) {
+    let transaction = db.transaction(['users'], 'readonly');
+    let objectStore = transaction.objectStore('users');
+    let index = objectStore.index('email');
+    let request = index.get(email);
+    
+    request.onsuccess = (event) => {
+        let user = event.target.result;
+        console.log('User:', user);
+    };
+}
+
+// Promised-based wrapper (modern approach)
+class IndexedDBHelper {
+    constructor(dbName, version) {
+        this.dbName = dbName;
+        this.version = version;
+    }
+    
+    async open() {
+        return new Promise((resolve, reject) => {
+            const request = indexedDB.open(this.dbName, this.version);
+            
+            request.onerror = () => reject(request.error);
+            request.onsuccess = () => resolve(request.result);
+            
+            request.onupgradeneeded = (event) => {
+                this.onUpgrade(event.target.result);
+            };
+        });
+    }
+    
+    onUpgrade(db) {
+        // Override in subclass
+    }
+    
+    async add(storeName, data) {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([storeName], 'readwrite');
+            const store = transaction.objectStore(storeName);
+            const request = store.add(data);
+            
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+    
+    async get(storeName, key) {
+        const db = await this.open();
+        return new Promise((resolve, reject) => {
+            const transaction = db.transaction([storeName], 'readonly');
+            const store = transaction.objectStore(storeName);
+            const request = store.get(key);
+            
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+    }
+}
+```
+
+---
+
+## Best Practices and Patterns
+
+### Code Organization
+
+```javascript
+// 1. Use meaningful names
+// ❌ Bad
+let d = new Date();
+let x = users.filter(u => u.a > 18);
+
+// ✅ Good
+let currentDate = new Date();
+let adults = users.filter(user => user.age > 18);
+
+// 2. Use constants for magic numbers
+// ❌ Bad
+if (user.age >= 18) { }
+
+// ✅ Good
+const MINIMUM_AGE = 18;
+if (user.age >= MINIMUM_AGE) { }
+
+// 3. One function = one purpose
+// ❌ Bad
+function processUserAndSendEmail(user) {
+    // Validate user
+    // Save to database
+    // Send email
+    // Log activity
+}
+
+// ✅ Good
+function validateUser(user) { }
+function saveUser(user) { }
+function sendWelcomeEmail(user) { }
+function logActivity(activity) { }
+
+// 4. Use early returns
+// ❌ Bad
+function processUser(user) {
+    if (user) {
+        if (user.age >= 18) {
+            if (user.email) {
+                // Process user
+            }
+        }
+    }
+}
+
+// ✅ Good
+function processUser(user) {
+    if (!user) return;
+    if (user.age < 18) return;
+    if (!user.email) return;
+    
+    // Process user
+}
+
+// 5. Avoid deep nesting
+// ❌ Bad
+if (condition1) {
+    if (condition2) {
+        if (condition3) {
+            // Deep nesting
+        }
+    }
+}
+
+// ✅ Good
+if (!condition1) return;
+if (!condition2) return;
+if (!condition3) return;
+// Flat code
+
+// 6. Use descriptive variable names
+// ❌ Bad
+let arr = ['apple', 'banana'];
+let temp = arr.filter(x => x.length > 5);
+
+// ✅ Good
+let fruits = ['apple', 'banana'];
+let longFruits = fruits.filter(fruit => fruit.length > 5);
+
+// 7. Group related code
+// ✅ Good organization
+class UserService {
+    // Related methods together
+    createUser(data) { }
+    updateUser(id, data) { }
+    deleteUser(id) { }
+    getUser(id) { }
+}
+
+// 8. Use configuration objects for many parameters
+// ❌ Bad
+function createUser(name, age, email, phone, address, city, country, zip) { }
+
+// ✅ Good
+function createUser(config) {
+    const { name, age, email, phone, address, city, country, zip } = config;
+}
+
+createUser({
+    name: 'John',
+    age: 30,
+    email: 'john@example.com'
+    // ... other fields
+});
+```
+
+### Design Patterns
+
+```javascript
+// 1. Module Pattern
+const UserModule = (function() {
+    // Private variables
+    let users = [];
+    
+    // Private methods
+    function validateUser(user) {
+        return user.name && user.email;
+    }
+    
+    // Public API
+    return {
+        addUser(user) {
+            if (validateUser(user)) {
+                users.push(user);
+                return true;
+            }
+            return false;
+        },
+        
+        getUsers() {
+            return [...users]; // Return copy
+        },
+        
+        getUserCount() {
+            return users.length;
+        }
+    };
+})();
+
+UserModule.addUser({ name: 'John', email: 'john@example.com' });
+console.log(UserModule.getUserCount()); // 1
+
+// 2. Singleton Pattern
+class Database {
+    constructor() {
+        if (Database.instance) {
+            return Database.instance;
+        }
+        
+        this.connection = this.connect();
+        Database.instance = this;
+    }
+    
+    connect() {
+        console.log('Connecting to database...');
+        return { connected: true };
+    }
+    
+    query(sql) {
+        console.log('Executing:', sql);
+    }
+}
+
+const db1 = new Database();
+const db2 = new Database();
+console.log(db1 === db2); // true (same instance)
+
+// 3. Factory Pattern
+class UserFactory {
+    static createUser(type, data) {
+        switch(type) {
+            case 'admin':
+                return new AdminUser(data);
+            case 'customer':
+                return new CustomerUser(data);
+            case 'guest':
+                return new GuestUser(data);
+            default:
+                throw new Error('Invalid user type');
+        }
+    }
+}
+
+class AdminUser {
+    constructor(data) {
+        this.name = data.name;
+        this.role = 'admin';
+        this.permissions = ['read', 'write', 'delete'];
+    }
+}
+
+class CustomerUser {
+    constructor(data) {
+        this.name = data.name;
+        this.role = 'customer';
+        this.permissions = ['read'];
+    }
+}
+
+const admin = UserFactory.createUser('admin', { name: 'John' });
+const customer = UserFactory.createUser('customer', { name: 'Jane' });
+
+// 4. Observer Pattern (Pub/Sub)
+class EventEmitter {
+    constructor() {
+        this.events = {};
+    }
+    
+    on(event, callback) {
+        if (!this.events[event]) {
+            this.events[event] = [];
+        }
+        this.events[event].push(callback);
+    }
+    
+    off(event, callback) {
+        if (!this.events[event]) return;
+        
+        this.events[event] = this.events[event].filter(cb => cb !== callback);
+    }
+    
+    emit(event, data) {
+        if (!this.events[event]) return;
+        
+        this.events[event].forEach(callback => callback(data));
+    }
+}
+
+const emitter = new EventEmitter();
+
+emitter.on('userLogin', (user) => {
+    console.log('User logged in:', user);
+});
+
+emitter.on('userLogin', (user) => {
+    console.log('Sending welcome email to', user);
+});
+
+emitter.emit('userLogin', 'John'); // Both callbacks execute
+
+// 5. Strategy Pattern
+class PaymentStrategy {
+    pay(amount) {
+        throw new Error('Must implement pay method');
+    }
+}
+
+class CreditCardPayment extends PaymentStrategy {
+    constructor(cardNumber) {
+        super();
+        this.cardNumber = cardNumber;
+    }
+    
+    pay(amount) {
+        console.log(`Paying ${amount} with credit card ${this.cardNumber}`);
+    }
+}
+
+class PayPalPayment extends PaymentStrategy {
+    constructor(email) {
+        super();
+        this.email = email;
+    }
+    
+    pay(amount) {
+        console.log(`Paying ${amount} via PayPal (${this.email})`);
+    }
+}
+
+class ShoppingCart {
+    constructor(paymentStrategy) {
+        this.paymentStrategy = paymentStrategy;
+    }
+    
+    checkout(amount) {
+        this.paymentStrategy.pay(amount);
+    }
+}
+
+const cart1 = new ShoppingCart(new CreditCardPayment('1234-5678'));
+cart1.checkout(100);
+
+const cart2 = new ShoppingCart(new PayPalPayment('john@example.com'));
+cart2.checkout(50);
+
+// 6. Builder Pattern
+class UserBuilder {
+    constructor(name) {
+        this.user = { name };
+    }
+    
+    setAge(age) {
+        this.user.age = age;
+        return this;
+    }
+    
+    setEmail(email) {
+        this.user.email = email;
+        return this;
+    }
+    
+    setAddress(address) {
+        this.user.address = address;
+        return this;
+    }
+    
+    build() {
+        return this.user;
+    }
+}
+
+const user = new UserBuilder('John')
+    .setAge(30)
+    .setEmail('john@example.com')
+    .setAddress('123 Main St')
+    .build();
+
+console.log(user);
+```
+
+### SOLID Principles
+
+```javascript
+// S - Single Responsibility Principle
+// Each class should have one reason to change
+
+// ❌ Bad - Multiple responsibilities
+class User {
+    constructor(name) {
+        this.name = name;
+    }
+    
+    saveToDatabase() {
+        // Database logic
+    }
+    
+    sendEmail() {
+        // Email logic
+    }
+    
+    generateReport() {
+        // Report logic
+    }
+}
+
+// ✅ Good - Separate responsibilities
+class User {
+    constructor(name) {
+        this.name = name;
+    }
+}
+
+class UserRepository {
+    save(user) {
+        // Database logic
+    }
+}
+
+class EmailService {
+    send(user) {
+        // Email logic
+    }
+}
+
+class ReportGenerator {
+    generate(user) {
+        // Report logic
+    }
+}
+
+// O - Open/Closed Principle
+// Open for extension, closed for modification
+
+// ❌ Bad - Must modify class to add new shapes
+class AreaCalculator {
+    calculate(shapes) {
+        let total = 0;
+        for (let shape of shapes) {
+            if (shape.type === 'circle') {
+                total += Math.PI * shape.radius ** 2;
+            } else if (shape.type === 'rectangle') {
+                total += shape.width * shape.height;
+            }
+        }
+        return total;
+    }
+}
+
+// ✅ Good - Can extend without modifying
+class Shape {
+    area() {
+        throw new Error('Must implement area method');
+    }
+}
+
+class Circle extends Shape {
+    constructor(radius) {
+        super();
+        this.radius = radius;
+    }
+    
+    area() {
+        return Math.PI * this.radius ** 2;
+    }
+}
+
+class Rectangle extends Shape {
+    constructor(width, height) {
+        super();
+        this.width = width;
+        this.height = height;
+    }
+    
+    area() {
+        return this.width * this.height;
+    }
+}
+
+class AreaCalculator {
+    calculate(shapes) {
+        return shapes.reduce((total, shape) => total + shape.area(), 0);
+    }
+}
+
+// L - Liskov Substitution Principle
+// Subclasses should be substitutable for their base classes
+
+// ❌ Bad - Square changes Rectangle behavior
+class Rectangle {
+    setWidth(width) {
+        this.width = width;
+    }
+    
+    setHeight(height) {
+        this.height = height;
+    }
+    
+    area() {
+        return this.width * this.height;
+    }
+}
+
+class Square extends Rectangle {
+    setWidth(width) {
+        this.width = width;
+        this.height = width; // Breaks substitution!
+    }
+    
+    setHeight(height) {
+        this.width = height;
+        this.height = height;
+    }
+}
+
+// ✅ Good - Separate implementations
+class Shape {
+    area() {
+        throw new Error('Must implement');
+    }
+}
+
+class Rectangle extends Shape {
+    constructor(width, height) {
+        super();
+        this.width = width;
+        this.height = height;
+    }
+    
+    area() {
+        return this.width * this.height;
+    }
+}
+
+class Square extends Shape {
+    constructor(side) {
+        super();
+        this.side = side;
+    }
+    
+    area() {
+        return this.side ** 2;
+    }
+}
+
+// I - Interface Segregation Principle
+// Clients shouldn't depend on interfaces they don't use
+
+// ❌ Bad - Forces implementation of unused methods
+class Worker {
+    work() { }
+    eat() { }
+    sleep() { }
+}
+
+class Robot extends Worker {
+    work() {
+        console.log('Working...');
+    }
+    
+    eat() {
+        // Robots don't eat!
+        throw new Error('Robots do not eat');
+    }
+    
+    sleep() {
+        // Robots don't sleep!
+        throw new Error('Robots do not sleep');
+    }
+}
+
+// ✅ Good - Separate interfaces
+class Workable {
+    work() {
+        throw new Error('Must implement');
+    }
+}
+
+class Eatable {
+    eat() {
+        throw new Error('Must implement');
+    }
+}
+
+class Human extends Workable {
+    work() {
+        console.log('Working...');
+    }
+}
+
+// Mix interfaces as needed
+Object.assign(Human.prototype, Eatable.prototype);
+
+// D - Dependency Inversion Principle
+// Depend on abstractions, not concretions
+
+// ❌ Bad - High-level depends on low-level
+class MySQLDatabase {
+    connect() {
+        console.log('MySQL connected');
+    }
+}
+
+class UserService {
+    constructor() {
+        this.db = new MySQLDatabase(); // Direct dependency!
+    }
+}
+
+// ✅ Good - Depend on abstraction
+class Database {
+    connect() {
+        throw new Error('Must implement');
+    }
+}
+
+class MySQLDatabase extends Database {
+    connect() {
+        console.log('MySQL connected');
+    }
+}
+
+class MongoDatabase extends Database {
+    connect() {
+        console.log('MongoDB connected');
+    }
+}
+
+class UserService {
+    constructor(database) {
+        this.db = database; // Inject dependency
+    }
+}
+
+const userService = new UserService(new MySQLDatabase());
+```
+
+---
+
+## Performance Optimization
+
+### Optimizing Loops
+
+```javascript
+// 1. Cache array length
+// ❌ Slower
+for (let i = 0; i < array.length; i++) {
+    // array.length evaluated every iteration
+}
+
+// ✅ Faster
+const length = array.length;
+for (let i = 0; i < length; i++) {
+    // length cached
+}
+
+// 2. Use appropriate loop
+// forEach for simple iteration
+array.forEach(item => console.log(item));
+
+// map for transformation
+const doubled = array.map(n => n * 2);
+
+// filter for selection
+const evens = array.filter(n => n % 2 === 0);
+
+// for...of for readability with early exit
+for (const item of array) {
+    if (condition) break; // Can break
+}
+
+// 3. Avoid modifying array during iteration
+// ❌ Bad
+for (let i = 0; i < array.length; i++) {
+    array.push(newItem); // Infinite loop!
+}
+
+// ✅ Good
+const itemsToAdd = [];
+for (const item of array) {
+    itemsToAdd.push(newItem);
+}
+array.push(...itemsToAdd);
+
+// 4. Use reverse loops for deletions
+// ❌ May skip elements
+for (let i = 0; i < array.length; i++) {
+    if (condition) {
+        array.splice(i, 1);
+    }
+}
+
+// ✅ Correct
+for (let i = array.length - 1; i >= 0; i--) {
+    if (condition) {
+        array.splice(i, 1);
+    }
+}
+
+// Or filter (creates new array)
+array = array.filter(item => !condition);
+```
+
+### DOM Optimization
+
+```javascript
+// 1. Batch DOM updates
+// ❌ Slow - Multiple reflows
+for (let i = 0; i < 100; i++) {
+    const li = document.createElement('li');
+    li.textContent = `Item ${i}`;
+    ul.appendChild(li); // Reflow each time!
+}
+
+// ✅ Fast - Single reflow
+const fragment = document.createDocumentFragment();
+for (let i = 0; i < 100; i++) {
+    const li = document.createElement('li');
+    li.textContent = `Item ${i}`;
+    fragment.appendChild(li);
+}
+ul.appendChild(fragment); // One reflow
+
+// 2. Cache DOM queries
+// ❌ Slow
+for (let i = 0; i < 100; i++) {
+    document.getElementById('container').innerHTML += '<p>Text</p>';
+}
+
+// ✅ Fast
+const container = document.getElementById('container');
+let html = '';
+for (let i = 0; i < 100; i++) {
+    html += '<p>Text</p>';
+}
+container.innerHTML = html;
+
+// 3. Use event delegation
+// ❌ Slow - Many listeners
+document.querySelectorAll('.btn').forEach(btn => {
+    btn.addEventListener('click', handleClick);
+});
+
+// ✅ Fast - One listener
+document.getElementById('container').addEventListener('click', (e) => {
+    if (e.target.matches('.btn')) {
+        handleClick(e);
+    }
+});
+
+// 4. Minimize reflows
+// ❌ Multiple reflows
+element.style.width = '100px';
+element.style.height = '100px';
+element.style.border = '1px solid black';
+
+// ✅ One reflow
+element.style.cssText = 'width: 100px; height: 100px; border: 1px solid black;';
+
+// Or
+element.className = 'styled';
+
+// 5. Read then write
+// ❌ Causes multiple reflows
+const width = element.offsetWidth;
+element.style.width = width + 10 + 'px';
+const height = element.offsetHeight; // Forces reflow!
+element.style.height = height + 10 + 'px';
+
+// ✅ Better
+const width = element.offsetWidth;
+const height = element.offsetHeight;
+element.style.width = width + 10 + 'px';
+element.style.height = height + 10 + 'px';
+```
+
+### Memory Management
+
+```javascript
+// 1. Avoid memory leaks
+// ❌ Memory leak - event listener never removed
+function attachListener() {
+    const button = document.getElementById('btn');
+    button.addEventListener('click', handleClick);
+    // If button removed from DOM, listener remains!
+}
+
+// ✅ Clean up
+function attachListener() {
+    const button = document.getElementById('btn');
+    const handler = () => handleClick();
+    button.addEventListener('click', handler);
+    
+    return () => {
+        button.removeEventListener('click', handler);
+    };
+}
+
+const cleanup = attachListener();
+// Later: cleanup();
+
+// 2. Clear timers
+// ❌ Memory leak
+function startTimer() {
+    setInterval(() => {
+        console.log('Running...');
+    }, 1000);
+}
+
+// ✅ Clean up
+function startTimer() {
+    const intervalId = setInterval(() => {
+        console.log('Running...');
+    }, 1000);
+    
+    return () => clearInterval(intervalId);
+}
+
+const stopTimer = startTimer();
+// Later: stopTimer();
+
+// 3. Avoid global variables
+// ❌ Pollutes global scope
+var cache = {};
+var userData = {};
+
+// ✅ Use modules or IIFE
+const DataModule = (function() {
+    let cache = {};
+    let userData = {};
+    
+    return {
+        // Public API
+    };
+})();
+
+// 4. WeakMap for object associations
+// ❌ Prevents garbage collection
+const metadata = new Map();
+let obj = { id: 1 };
+metadata.set(obj, { created: Date.now() });
+obj = null; // Object still referenced by Map!
+
+// ✅ Allows garbage collection
+const metadata = new WeakMap();
+let obj = { id: 1 };
+metadata.set(obj, { created: Date.now() });
+obj = null; // Object can be garbage collected
+
+// 5. Break circular references
+// ❌ Circular reference
+let element = document.getElementById('myElement');
+element.data = { element: element }; // Circular!
+
+// ✅ No circular reference
+let element = document.getElementById('myElement');
+const data = new WeakMap();
+data.set(element, { /* metadata */ });
+```
+
+### Code Splitting and Lazy Loading
+
+```javascript
+// 1. Dynamic imports
+// Load module only when needed
+async function loadChart() {
+    const { Chart } = await import('./chart.js');
+    return new Chart();
+}
+
+button.addEventListener('click', async () => {
+    const chart = await loadChart();
+    chart.render();
+});
+
+// 2. Lazy load images
+// HTML
+// <img data-src="image.jpg" class="lazy">
+
+const lazyImages = document.querySelectorAll('.lazy');
+
+const imageObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+        if (entry.isIntersecting) {
+            const img = entry.target;
+            img.src = img.dataset.src;
+            img.classList.remove('lazy');
+            imageObserver.unobserve(img);
+        }
+    });
+});
+
+lazyImages.forEach(img => imageObserver.observe(img));
+
+// 3. Code splitting with webpack
+// Automatically splits code at import()
+import('./heavy-module.js').then(module => {
+    module.doSomething();
+});
+
+// 4. Conditional loading
+if (isFeatureEnabled) {
+    import('./feature.js').then(feature => {
+        feature.initialize();
+    });
+}
+```
+
+### Debouncing and Throttling (covered earlier)
+
+```javascript
+// Performance optimization for frequent events
+
+// Debounce - search input
+const search = debounce((query) => {
+    fetch(`/api/search?q=${query}`);
+}, 300);
+
+// Throttle - scroll event
+const handleScroll = throttle(() => {
+    updateScrollPosition();
+}, 100);
+```
+
+---
+
+## Testing
+
+### Unit Testing Basics
+
+```javascript
+// Simple assertion functions
+function assert(condition, message) {
+    if (!condition) {
+        throw new Error(message || 'Assertion failed');
+    }
+}
+
+function assertEqual(actual, expected, message) {
+    if (actual !== expected) {
+        throw new Error(`${message}: expected ${expected}, got ${actual}`);
+    }
+}
+
+// Test function
+function add(a, b) {
+    return a + b;
+}
+
+// Tests
+function testAdd() {
+    assertEqual(add(2, 3), 5, 'add(2, 3) should equal 5');
+    assertEqual(add(-1, 1), 0, 'add(-1, 1) should equal 0');
+    assertEqual(add(0, 0), 0, 'add(0, 0) should equal 0');
+    console.log('All tests passed!');
+}
+
+testAdd();
+
+// Test runner
+class TestRunner {
+    constructor() {
+        this.tests = [];
+        this.passed = 0;
+        this.failed = 0;
+    }
+    
+    test(description, fn) {
+        this.tests.push({ description, fn });
+    }
+    
+    run() {
+        console.log(`Running ${this.tests.length} tests...`);
+        
+        this.tests.forEach(({ description, fn }) => {
+            try {
+                fn();
+                this.passed++;
+                console.log(`✓ ${description}`);
+            } catch (error) {
+                this.failed++;
+                console.log(`✗ ${description}`);
+                console.error(`  ${error.message}`);
+            }
+        });
+        
+        console.log(`\nPassed: ${this.passed}, Failed: ${this.failed}`);
+    }
+}
+
+// Usage
+const runner = new TestRunner();
+
+runner.test('add function adds two numbers', () => {
+    assertEqual(add(2, 3), 5);
+});
+
+runner.test('add function handles negative numbers', () => {
+    assertEqual(add(-1, 1), 0);
+});
+
+runner.run();
+```
+
+### Jest-style Testing
+
+```javascript
+// Modern testing with Jest (popular testing framework)
+
+// Example function to test
+function calculateTotal(items) {
+    return items.reduce((sum, item) => sum + item.price * item.quantity, 0);
+}
+
+// Jest tests
+describe('calculateTotal', () => {
+    test('calculates total for single item', () => {
+        const items = [{ price: 10, quantity: 2 }];
+        expect(calculateTotal(items)).toBe(20);
+    });
+    
+    test('calculates total for multiple items', () => {
+        const items = [
+            { price: 10, quantity: 2 },
+            { price: 5, quantity: 3 }
+        ];
+        expect(calculateTotal(items)).toBe(35);
+    });
+    
+    test('returns 0 for empty array', () => {
+        expect(calculateTotal([])).toBe(0);
+    });
+});
+
+// Async testing
+describe('fetchUser', () => {
+    test('fetches user data', async () => {
+        const user = await fetchUser(1);
+        expect(user).toHaveProperty('name');
+        expect(user).toHaveProperty('email');
+    });
+    
+    test('handles errors', async () => {
+        await expect(fetchUser(999)).rejects.toThrow('User not found');
+    });
+});
+
+// Mocking
+describe('UserService', () => {
+    test('creates user', async () => {
+        // Mock database
+        const mockDB = {
+            save: jest.fn().mockResolvedValue({ id: 1, name: 'John' })
+        };
+        
+        const service = new UserService(mockDB);
+        const result = await service.createUser({ name: 'John' });
+        
+        expect(mockDB.save).toHaveBeenCalledWith({ name: 'John' });
+        expect(result).toEqual({ id: 1, name: 'John' });
+    });
+});
+
+// Setup and teardown
+describe('Database tests', () => {
+    let db;
+    
+    beforeAll(() => {
+        // Runs once before all tests
+        db = connectToDatabase();
+    });
+    
+    afterAll(() => {
+        // Runs once after all tests
+        db.disconnect();
+    });
+    
+    beforeEach(() => {
+        // Runs before each test
+        db.clear();
+    });
+    
+    afterEach(() => {
+        // Runs after each test
+        db.cleanup();
+    });
+    
+    test('saves user', () => {
+        db.save({ name: 'John' });
+        expect(db.count()).toBe(1);
+    });
+});
+```
+
+### Test-Driven Development (TDD)
+
+```javascript
+// TDD Cycle: Red -> Green -> Refactor
+
+// 1. RED - Write failing test
+test('Password validator requires minimum length', () => {
+    const validator = new PasswordValidator();
+    expect(validator.validate('abc')).toBe(false);
+});
+
+// 2. GREEN - Write minimal code to pass
+class PasswordValidator {
+    validate(password) {
+        return password.length >= 8;
+    }
+}
+
+// 3. REFACTOR - Improve code
+class PasswordValidator {
+    constructor(minLength = 8) {
+        this.minLength = minLength;
+    }
+    
+    validate(password) {
+        if (!password || typeof password !== 'string') {
+            return false;
+        }
+        return password.length >= this.minLength;
+    }
+}
+
+// Add more tests
+test('Password validator requires uppercase letter', () => {
+    const validator = new PasswordValidator();
+    expect(validator.validate('password123')).toBe(false);
+    expect(validator.validate('Password123')).toBe(true);
+});
+
+// Update implementation
+class PasswordValidator {
+    validate(password) {
+        if (!password || typeof password !== 'string') {
+            return false;
+        }
+        
+        if (password.length < 8) {
+            return false;
+        }
+        
+        if (!/[A-Z]/.test(password)) {
+            return false;
+        }
+        
+        return true;
+    }
+}
+```
+
+---
+
+## Common Pitfalls
+
+### Type Coercion Issues
+
+```javascript
+// 1. Equality comparisons
+console.log(0 == false); // true (type coercion)
+console.log(0 === false); // false (no coercion)
+console.log('' == false); // true
+console.log('' === false); // false
+
+// Always use === and !==
+
+// 2. Addition vs concatenation
+console.log(1 + 2); // 3
+console.log('1' + 2); // "12" (string concatenation)
+console.log(1 + '2'); // "12"
+console.log(1 + 2 + '3'); // "33" (1+2=3, then 3+"3"="33")
+console.log('1' + 2 + 3); // "123" ("1"+2="12", "12"+3="123")
+
+// 3. Subtraction always converts to number
+console.log('5' - 2); // 3
+console.log('5' - '2'); // 3
+console.log('hello' - 2); // NaN
+
+// 4. Truthy/falsy gotchas
+if ('0') { // String '0' is truthy!
+    console.log('This runs');
+}
+
+if (0) { // Number 0 is falsy
+    console.log('This does not run');
+}
+
+// Empty array is truthy but == false!
+console.log([] == false); // true
+console.log([] === false); // false
+if ([]) { console.log('Truthy'); } // Runs!
+```
+
+### Variable Scope Issues
+
+```javascript
+// 1. var hoisting
+console.log(x); // undefined (not ReferenceError)
+var x = 5;
+
+// 2. Temporal Dead Zone with let/const
+// console.log(y); // ReferenceError
+let y = 5;
+
+// 3. Loop closure problem
+for (var i = 0; i < 3; i++) {
+    setTimeout(() => {
+        console.log(i); // 3, 3, 3 (not 0, 1, 2)
+    }, 1000);
+}
+
+// Fix with let
+for (let i = 0; i < 3; i++) {
+    setTimeout(() => {
+        console.log(i); // 0, 1, 2
+    }, 1000);
+}
+
+// Or IIFE
+for (var i = 0; i < 3; i++) {
+    (function(j) {
+        setTimeout(() => {
+            console.log(j); // 0, 1, 2
+        }, 1000);
+    })(i);
+}
+
+// 4. this in callbacks
+const obj = {
+    name: 'Object',
+    method() {
+        setTimeout(function() {
+            console.log(this.name); // undefined (this is window/global)
+        }, 1000);
+    }
+};
+
+// Fix with arrow function
+const obj2 = {
+    name: 'Object',
+    method() {
+        setTimeout(() => {
+            console.log(this.name); // "Object"
+        }, 1000);
+    }
+};
+```
+
+### Array/Object Mutation
+
+```javascript
+// 1. Arrays passed by reference
+function addItem(arr, item) {
+    arr.push(item); // Mutates original!
+}
+
+const myArray = [1, 2, 3];
+addItem(myArray, 4);
+console.log(myArray); // [1, 2, 3, 4]
+
+// Fix: Return new array
+function addItem(arr, item) {
+    return [...arr, item];
+}
+
+// 2. Object passed by reference
+function updateUser(user) {
+    user.name = 'Changed'; // Mutates original!
+}
+
+const user = { name: 'John' };
+updateUser(user);
+console.log(user.name); // "Changed"
+
+// Fix: Return new object
+function updateUser(user) {
+    return { ...user, name: 'Changed' };
+}
+
+// 3. Shallow copy gotcha
+const original = { a: 1, b: { c: 2 } };
+const copy = { ...original };
+
+copy.b.c = 3;
+console.log(original.b.c); // 3 (nested object still shared!)
+
+// Deep copy solution
+const deepCopy = JSON.parse(JSON.stringify(original));
+// Or use structuredClone (modern browsers)
+const deepCopy2 = structuredClone(original);
+```
+
+### Async/Await Errors
+
+```javascript
+// 1. Forgetting await
+async function fetchData() {
+    const data = fetch(url); // Missing await!
+    console.log(data); // Promise, not data
+}
+
+// Fix
+async function fetchData() {
+    const response = await fetch(url);
+    const data = await response.json();
+    return data;
+}
+
+// 2. Unhandled promise rejection
+async function riskyOperation() {
+    const data = await fetchData(); // If this fails, uncaught error!
+    return data;
+}
+
+// Fix: try/catch
+async function riskyOperation() {
+    try {
+        const data = await fetchData();
+        return data;
+    } catch (error) {
+        console.error('Error:', error);
+        return null;
+    }
+}
+
+// 3. Sequential when parallel would work
+async function slow() {
+    const user = await fetchUser(); // Wait
+    const posts = await fetchPosts(); // Then wait
+    return { user, posts };
+}
+
+// Fix: Parallel
+async function fast() {
+    const [user, posts] = await Promise.all([
+        fetchUser(),
+        fetchPosts()
+    ]);
+    return { user, posts };
+}
+```
+
+### Floating Point Precision
+
+```javascript
+// JavaScript uses IEEE 754 floating point
+
+// Problem
+console.log(0.1 + 0.2); // 0.30000000000000004
+console.log(0.1 + 0.2 === 0.3); // false
+
+// Solutions:
+// 1. toFixed()
+console.log((0.1 + 0.2).toFixed(2)); // "0.30"
+
+// 2. Multiply, calculate, divide
+function addDecimal(a, b) {
+    return (a * 10 + b * 10) / 10;
+}
+console.log(addDecimal(0.1, 0.2)); // 0.3
+
+// 3. Epsilon comparison
+function equalWithinEpsilon(a, b, epsilon = 0.00001) {
+    return Math.abs(a - b) < epsilon;
+}
+console.log(equalWithinEpsilon(0.1 + 0.2, 0.3)); // true
+
+// 4. Use libraries for financial calculations
+// decimal.js, big.js, etc.
+```
+
+---
+
+## Learning Roadmap
+
+### Beginner Level (1-3 months)
+
+```javascript
+// Week 1-2: Fundamentals
+// - Variables (let, const, var)
+// - Data types (string, number, boolean, null, undefined)
+// - Operators (arithmetic, comparison, logical)
+// - Type conversion and coercion
+
+// Week 3-4: Control Flow
+// - if/else statements
+// - switch statements
+// - Ternary operator
+// - Loops (for, while, do-while)
+
+// Week 5-6: Functions
+// - Function declarations
+// - Function expressions
+// - Arrow functions
+// - Parameters and return values
+// - Scope
+
+// Week 7-8: Arrays
+// - Creating and accessing arrays
+// - Array methods (push, pop, shift, unshift)
+// - Iterating arrays (forEach, for...of)
+// - map, filter, reduce
+
+// Week 9-10: Objects
+// - Object literals
+// - Accessing properties
+// - Object methods
+// - this keyword
+// - Destructuring
+
+// Week 11-12: DOM Manipulation
+// - Selecting elements
+// - Modifying content and attributes
+// - Creating and removing elements
+// - Event listeners
+// - Forms and validation
+
+// Practice Projects:
+// - Todo list
+// - Calculator
+// - Quiz app
+// - Weather app
+```
+
+### Intermediate Level (3-6 months)
+
+```javascript
+// Month 4: Advanced Functions
+// - Closures
+// - Callbacks
+// - Higher-order functions
+// - Function methods (call, apply, bind)
+// - Currying
+
+// Month 5: Async JavaScript
+// - setTimeout and setInterval
+// - Promises
+// - async/await
+// - Fetch API
+// - Error handling
+
+// Month 6: OOP and Advanced Concepts
+// - Constructor functions
+// - Prototypes and inheritance
+// - ES6 Classes
+// - Getters and setters
+// - Static methods
+
+// Month 7: Modern JavaScript
+// - Modules (import/export)
+// - Spread and rest operators
+// - Template literals
+// - Enhanced object literals
+// - Optional chaining and nullish coalescing
+
+// Month 8: Tools and Build Process
+// - npm and package.json
+// - Module bundlers (Webpack, Vite)
+// - Babel for transpiling
+// - ESLint for code quality
+// - Git and version control
+
+// Practice Projects:
+// - Blog platform
+// - E-commerce site
+// - Social media dashboard
+// - Real-time chat app
+```
+
+### Advanced Level (6+ months)
+
+```javascript
+// Months 9-10: Design Patterns
+// - Module pattern
+// - Factory pattern
+// - Singleton pattern
+// - Observer pattern
+// - Strategy pattern
+// - SOLID principles
+
+// Months 11-12: Performance and Testing
+// - Performance optimization
+// - Memory management
+// - Debouncing and throttling
+// - Unit testing (Jest)
+// - Integration testing
+// - Test-driven development
+
+// Months 13-14: Advanced Topics
+// - Proxy and Reflect
+// - Generators and iterators
+// - Web Workers
+// - Service Workers
+// - WebSockets
+
+// Months 15+: Frameworks and Libraries
+// - React.js
+// - Vue.js or Angular
+// - Node.js and Express
+// - TypeScript
+// - GraphQL
+
+// Practice Projects:
+// - Full-stack application
+// - Progressive Web App
+// - Real-time collaborative tool
+// - Microservices architecture
+```
+
+### Best Learning Resources
+
+```javascript
+// Free Resources
+const freeResources = {
+    documentation: [
+        'MDN Web Docs - https://developer.mozilla.org',
+        'JavaScript.info - https://javascript.info',
+        'Eloquent JavaScript (book) - https://eloquentjavascript.net'
+    ],
+    
+    interactive: [
+        'freeCodeCamp - https://freecodecamp.org',
+        'JavaScript30 - https://javascript30.com',
+        'Codecademy - https://codecademy.com'
+    ],
+    
+    videos: [
+        'Traversy Media (YouTube)',
+        'The Net Ninja (YouTube)',
+        'Fireship (YouTube)'
+    ],
+    
+    practice: [
+        'LeetCode - https://leetcode.com',
+        'Codewars - https://codewars.com',
+        'HackerRank - https://hackerrank.com'
+    ]
+};
+
+// Paid Resources
+const paidResources = {
+    courses: [
+        'The Complete JavaScript Course (Udemy)',
+        'JavaScript: The Advanced Concepts (Udemy)',
+        'Frontend Masters - JavaScript Path'
+    ],
+    
+    books: [
+        'You Don\'t Know JS (book series)',
+        'JavaScript: The Definitive Guide',
+        'JavaScript: The Good Parts'
+    ]
+};
+
+// Study Tips
+const studyTips = [
+    'Code every day, even if just 30 minutes',
+    'Build projects, not just tutorials',
+    'Read other people\'s code on GitHub',
+    'Contribute to open source',
+    'Join JavaScript communities (Reddit, Discord)',
+    'Document what you learn',
+    'Teach others to reinforce learning',
+    'Focus on fundamentals before frameworks'
+];
+```
+
+### Interview Preparation
+
+```javascript
+// Common Interview Topics
+
+// 1. JavaScript Fundamentals
+// - Hoisting
+// - Closures
+// - this keyword
+// - Prototypes
+// - Event loop
+
+// 2. Data Structures
+function examples() {
+    // Arrays
+    const arr = [1, 2, 3];
+    
+    // Objects
+    const obj = { key: 'value' };
+    
+    // Maps
+    const map = new Map([['key', 'value']]);
+    
+    // Sets
+    const set = new Set([1, 2, 3]);
+    
+    // Stacks (using arrays)
+    class Stack {
+        constructor() {
+            this.items = [];
+        }
+        push(item) { this.items.push(item); }
+        pop() { return this.items.pop(); }
+    }
+    
+    // Queues
+    class Queue {
+        constructor() {
+            this.items = [];
+        }
+        enqueue(item) { this.items.push(item); }
+        dequeue() { return this.items.shift(); }
+    }
+}
+
+// 3. Algorithms
+// Sorting
+function bubbleSort(arr) {
+    for (let i = 0; i < arr.length; i++) {
+        for (let j = 0; j < arr.length - 1 - i; j++) {
+            if (arr[j] > arr[j + 1]) {
+                [arr[j], arr[j + 1]] = [arr[j + 1], arr[j]];
+            }
+        }
+    }
+    return arr;
+}
+
+// Searching
+function binarySearch(arr, target) {
+    let left = 0;
+    let right = arr.length - 1;
+    
+    while (left <= right) {
+        const mid = Math.floor((left + right) / 2);
+        if (arr[mid] === target) return mid;
+        if (arr[mid] < target) left = mid + 1;
+        else right = mid - 1;
+    }
+    return -1;
+}
+
+// Recursion
+function factorial(n) {
+    if (n <= 1) return 1;
+    return n * factorial(n - 1);
+}
+
+// 4. Common Interview Questions
+
+// Reverse a string
+function reverseString(str) {
+    return str.split('').reverse().join('');
+    // Or: return [...str].reverse().join('');
+}
+
+// Check palindrome
+function isPalindrome(str) {
+    const cleaned = str.toLowerCase().replace(/[^a-z0-9]/g, '');
+    return cleaned === cleaned.split('').reverse().join('');
+}
+
+// FizzBuzz
+function fizzBuzz(n) {
+    for (let i = 1; i <= n; i++) {
+        if (i % 15 === 0) console.log('FizzBuzz');
+        else if (i % 3 === 0) console.log('Fizz');
+        else if (i % 5 === 0) console.log('Buzz');
+        else console.log(i);
+    }
+}
+
+// Find duplicates
+function findDuplicates(arr) {
+    const seen = new Set();
+    const duplicates = new Set();
+    
+    for (const item of arr) {
+        if (seen.has(item)) {
+            duplicates.add(item);
+        }
+        seen.add(item);
+    }
+    
+    return [...duplicates];
+}
+
+// Flatten array
+function flatten(arr) {
+    return arr.reduce((flat, item) => {
+        return flat.concat(Array.isArray(item) ? flatten(item) : item);
+    }, []);
+}
+
+// Debounce (already covered)
+function debounce(func, delay) {
+    let timeoutId;
+    return function(...args) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => func.apply(this, args), delay);
+    };
+}
+
+// Deep clone
+function deepClone(obj) {
+    if (obj === null || typeof obj !== 'object') {
+        return obj;
+    }
+    
+    if (Array.isArray(obj)) {
+        return obj.map(item => deepClone(item));
+    }
+    
+    const cloned = {};
+    for (const key in obj) {
+        if (obj.hasOwnProperty(key)) {
+            cloned[key] = deepClone(obj[key]);
+        }
+    }
+    return cloned;
+}
+
+// Event emitter
+class EventEmitter {
+    constructor() {
+        this.events = {};
+    }
+    
+    on(event, callback) {
+        if (!this.events[event]) {
+            this.events[event] = [];
+        }
+        this.events[event].push(callback);
+    }
+    
+    emit(event, data) {
+        if (this.events[event]) {
+            this.events[event].forEach(cb => cb(data));
+        }
+    }
+    
+    off(event, callback) {
+        if (this.events[event]) {
+            this.events[event] = this.events[event].filter(cb => cb !== callback);
+        }
+    }
+}
+```
+
+---
+
+## Conclusion
+
+### Key Takeaways
+
+```javascript
+// 1. Master the fundamentals
+// - Understand types, variables, and scope
+// - Know how functions work
+// - Be comfortable with arrays and objects
+
+// 2. Embrace modern JavaScript
+// - Use const/let instead of var
+// - Arrow functions for cleaner code
+// - Destructuring for easier data access
+// - async/await for async operations
+
+// 3. Write clean code
+// - Use meaningful variable names
+// - Keep functions small and focused
+// - Comment when necessary
+// - Follow consistent style
+
+// 4. Think about performance
+// - Avoid unnecessary DOM manipulations
+// - Use appropriate data structures
+// - Optimize loops and algorithms
+// - Lazy load when possible
+
+// 5. Handle errors gracefully
+// - Use try/catch for error-prone code
+// - Validate user input
+// - Provide meaningful error messages
+// - Log errors for debugging
+
+// 6. Keep learning
+// - JavaScript evolves constantly
+// - Follow ECMAScript proposals
+// - Learn new patterns and techniques
+// - Build real projects
+```
+
+### Next Steps
+
+```javascript
+const nextSteps = {
+    immediate: [
+        'Review fundamentals you\'re unsure about',
+        'Build a simple project using what you learned',
+        'Read MDN documentation regularly',
+        'Practice coding challenges daily'
+    ],
+    
+    shortTerm: [
+        'Learn a JavaScript framework (React, Vue, or Angular)',
+        'Understand Node.js for backend development',
+        'Study TypeScript for type safety',
+        'Learn testing with Jest or similar'
+    ],
+    
+    longTerm: [
+        'Contribute to open source projects',
+        'Build and deploy full-stack applications',
+        'Master advanced patterns and architectures',
+        'Stay updated with JavaScript ecosystem'
+    ]
+};
+
+// Remember: Consistency beats intensity
+// Code a little every day rather than marathon sessions
+
+console.log('Happy coding! 🚀');
+```
+
+### Final Example: Complete Mini-Project
+
+```javascript
+// Todo List Application - Putting it all together
+
+class TodoApp {
+    constructor() {
+        this.todos = this.loadFromStorage() || [];
+        this.filter = 'all';
+        this.init();
+    }
+    
+    init() {
+        this.cacheDOM();
+        this.bindEvents();
+        this.render();
+    }
+    
+    cacheDOM() {
+        this.input = document.getElementById('todo-input');
+        this.addBtn = document.getElementById('add-btn');
+        this.todoList = document.getElementById('todo-list');
+        this.filters = document.querySelectorAll('.filter');
+    }
+    
+    bindEvents() {
+        this.addBtn.addEventListener('click', () => this.addTodo());
+        this.input.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') this.addTodo();
+        });
+        
+        this.todoList.addEventListener('click', (e) => {
+            if (e.target.classList.contains('delete')) {
+                this.deleteTodo(e.target.dataset.id);
+            } else if (e.target.classList.contains('toggle')) {
+                this.toggleTodo(e.target.dataset.id);
+            }
+        });
+        
+        this.filters.forEach(filter => {
+            filter.addEventListener('click', (e) => {
+                this.setFilter(e.target.dataset.filter);
+            });
+        });
+    }
+    
+    addTodo() {
+        const text = this.input.value.trim();
+        if (!text) return;
+        
+        const todo = {
+            id: Date.now().toString(),
+            text,
+            completed: false,
+            createdAt: new Date().toISOString()
+        };
+        
+        this.todos.push(todo);
+        this.input.value = '';
+        this.saveToStorage();
+        this.render();
+    }
+    
+    deleteTodo(id) {
+        this.todos = this.todos.filter(todo => todo.id !== id);
+        this.saveToStorage();
+        this.render();
+    }
+    
+    toggleTodo(id) {
+        const todo = this.todos.find(todo => todo.id === id);
+        if (todo) {
+            todo.completed = !todo.completed;
+            this.saveToStorage();
+            this.render();
+        }
+    }
+    
+    setFilter(filter) {
+        this.filter = filter;
+        this.render();
+    }
+    
+    getFilteredTodos() {
+        switch(this.filter) {
+            case 'active':
+                return this.todos.filter(todo => !todo.completed);
+            case 'completed':
+                return this.todos.filter(todo => todo.completed);
+            default:
+                return this.todos;
+        }
+    }
+    
+    render() {
+        const todos = this.getFilteredTodos();
+        
+        this.todoList.innerHTML = todos.map(todo => `
+            <li class="${todo.completed ? 'completed' : ''}">
+                <input type="checkbox" 
+                       class="toggle" 
+                       data-id="${todo.id}" 
+                       ${todo.completed ? 'checked' : ''}>
+                <span>${todo.text}</span>
+                <button class="delete" data-id="${todo.id}">Delete</button>
+            </li>
+        `).join('');
+    }
+    
+    saveToStorage() {
+        localStorage.setItem('todos', JSON.stringify(this.todos));
+    }
+    
+    loadFromStorage() {
+        try {
+            return JSON.parse(localStorage.getItem('todos'));
+        } catch (error) {
+            console.error('Error loading todos:', error);
+            return null;
+        }
+    }
+}
+
+// Initialize app
+document.addEventListener('DOMContentLoaded', () => {
+    new TodoApp();
+});
+```
+
+---
+
+## Appendix: Quick Reference
+
+### ES6+ Features Cheatsheet
+
+```javascript
+// 1. let and const
+let variable = 'can reassign';
+const constant = 'cannot reassign';
+
+// 2. Arrow functions
+const add = (a, b) => a + b;
+
+// 3. Template literals
+const message = `Hello ${name}`;
+
+// 4. Destructuring
+const { name, age } = person;
+const [first, second] = array;
+
+// 5. Spread/Rest
+const newArray = [...oldArray, newItem];
+const newObj = { ...oldObj, newProp: value };
+function sum(...numbers) { }
+
+// 6. Default parameters
+function greet(name = 'Guest') { }
+
+// 7. Enhanced object literals
+const obj = {
+    name,
+    method() { },
+    [dynamicKey]: value
+};
+
+// 8. for...of
+for (const item of array) { }
+
+// 9. Promises
+const promise = new Promise((resolve, reject) => { });
+
+// 10. async/await
+async function fetchData() {
+    const data = await fetch(url);
+}
+
+// 11. Classes
+class MyClass {
+    constructor() { }
+    method() { }
+    static staticMethod() { }
+}
+
+// 12. Modules
+export const myFunction = () => { };
+import { myFunction } from './module.js';
+
+// 13. Optional chaining
+const value = obj?.prop?.nestedProp;
+
+// 14. Nullish coalescing
+const result = value ?? defaultValue;
+
+// 15. Logical assignment
+x ||= defaultValue;
+x &&= value;
+x ??= defaultValue;
+```
+
+### Common Methods Reference
+
+```javascript
+// String methods
+str.length, str.toUpperCase(), str.toLowerCase()
+str.charAt(i), str.indexOf(substr), str.includes(substr)
+str.startsWith(substr), str.endsWith(substr)
+str.slice(start, end), str.substring(start, end)
+str.split(delimiter), str.trim(), str.replace(old, new)
+str.repeat(n), str.padStart(n, char), str.padEnd(n, char)
+
+// Array methods
+arr.length, arr.push(item), arr.pop()
+arr.unshift(item), arr.shift()
+arr.concat(arr2), arr.join(delimiter)
+arr.slice(start, end), arr.splice(start, count, ...items)
+arr.indexOf(item), arr.includes(item)
+arr.find(fn), arr.findIndex(fn)
+arr.filter(fn), arr.map(fn), arr.reduce(fn, init)
+arr.some(fn), arr.every(fn)
+arr.sort(fn), arr.reverse()
+arr.flat(depth), arr.flatMap(fn)
+
+// Object methods
+Object.keys(obj), Object.values(obj), Object.entries(obj)
+Object.assign(target, ...sources)
+Object.freeze(obj), Object.seal(obj)
+Object.create(proto)
+Object.fromEntries(entries)
+
+// Math methods
+Math.abs(n), Math.round(n), Math.ceil(n), Math.floor(n)
+Math.min(...nums), Math.max(...nums)
+Math.random(), Math.sqrt(n), Math.pow(base, exp)
+Math.PI, Math.E
+
+// Number methods
+Number(str), parseInt(str), parseFloat(str)
+num.toFixed(decimals), num.toPrecision(digits)
+Number.isInteger(n), Number.isNaN(n)
+
+// Date methods
+new Date(), Date.now()
+date.getFullYear(), date.getMonth(), date.getDate()
+date.getHours(), date.getMinutes(), date.getSeconds()
+date.toISOString(), date.toLocaleDateString()
+```
+
+**End of Complete JavaScript Guide**
+
+*This comprehensive guide covers JavaScript from basics to advanced concepts. Continue practicing and building projects to solidify your understanding. Happy coding!* 🎉
